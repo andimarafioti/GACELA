@@ -5,9 +5,10 @@ import torch.nn as nn
 __author__ = 'Andres'
 
 class Discriminator(nn.Module):
-    def __init__(self, params):
+    def __init__(self, params, in_shape):
         super(Discriminator, self).__init__()
         self._params = params
+        self._in_shape = in_shape
         self.conv_discriminator = nn.ModuleList()
 
         curr_channel_count = self._params['data_size'] - 1
@@ -21,7 +22,7 @@ class Discriminator(nn.Module):
             ))
             curr_channel_count = nfilters
         shapeAfterConvs = self._infer_conv_output_shape(self._params['optimization']['batch_size'],
-                                                        self._params['net']['shape'])
+                                                        self._in_shape)
         linearInputChannels = 1
         for dim in shapeAfterConvs[1:]:
             linearInputChannels = linearInputChannels*dim
@@ -73,7 +74,7 @@ if __name__ == '__main__':
     params_discriminator['spectral_norm'] = True
     #params_discriminator['activation'] = blocks.lrelu
 
-    model = Discriminator(params_discriminator)
+    model = Discriminator(params_discriminator, params_discriminator['net']['shape'])
     print(model)
 
     x = torch.randn(params_discriminator['optimization']['batch_size'], *params_discriminator['net']['shape'])
