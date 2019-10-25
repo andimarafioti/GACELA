@@ -14,7 +14,7 @@ def calc_gradient_penalty(netD, real_data, fake_data, gamma):
 
     interpolates = alpha * real_data.detach() + ((1 - alpha) * fake_data.detach())
 
-    interpolates = interpolates.to('cuda')
+    interpolates = interpolates.to(device)
     interpolates.requires_grad_(True)
 
     disc_interpolates = netD(interpolates)
@@ -24,5 +24,5 @@ def calc_gradient_penalty(netD, real_data, fake_data, gamma):
                                     create_graph=True, retain_graph=True, only_inputs=True)[0]
 
     gradients = gradients.view(gradients.size(0), -1)
-    gradient_penalty = gamma * ((gradients.norm(2, dim=1) - 1) ** 2).mean()
+    gradient_penalty = gamma * ((gradients.norm(2, dim=1) - 1) ** 2)
     return gradient_penalty
