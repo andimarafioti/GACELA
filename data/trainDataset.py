@@ -2,6 +2,7 @@ import os
 import glob
 import numpy as np
 import scipy.io.wavfile
+import torch
 import torch.utils.data as data
 
 __author__ = 'Andres'
@@ -25,10 +26,10 @@ class TrainDataset(data.Dataset):
         return [filename for filename in filenames if pattern not in filename]
 
     def __len__(self):
-        return len(self.filenames)
+        return len(self.filenames) * 1000
 
     def __getitem__(self, index):
-        name = self.filenames[index]
+        name = self.filenames[index % len(self.filenames)]
         spectrogram = scipy.io.loadmat(name)['logspec']  # load audio
 
         starts = np.random.randint(0, spectrogram.shape[1]-self._window_size, self._examples_per_file)
@@ -42,5 +43,16 @@ class TrainDataset(data.Dataset):
 
 
 if __name__ == '__main__':
-    dataset = TrainDataset('', 128, 16)
+    examples_per_file = 16
+    dataset = TrainDataset("", window_size=512, examples_per_file=examples_per_file)
     print(dataset[1].shape)
+
+    train_loader = torch.utils.data.DataLoader(dataset,
+                                               batch_size=128 // 16,
+                                               shuffle=True)
+
+    for _ in train_loader:
+        print(_.shape)
+        _= _.view(128, *[1, 256, 128*4])
+
+        print(_.shape)
