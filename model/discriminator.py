@@ -21,7 +21,7 @@ class Discriminator(nn.Module):
                 nn.LeakyReLU(),
             ))
             curr_channel_count = nfilters
-        shapeAfterConvs = self._infer_conv_output_shape(self._params['optimization']['batch_size'],
+        shapeAfterConvs = self._infer_conv_output_shape(self._params['batch_size'],
                                                         self._in_shape)
         linearInputChannels = 1
         for dim in shapeAfterConvs[1:]:
@@ -47,6 +47,7 @@ class Discriminator(nn.Module):
 
     def forward(self, x):
         x = self.forward_conv(x)
+        print(x.size())
         x = x.view(x.size()[0], -1)
         x = self.forward_lin(x)
         return x
@@ -59,7 +60,7 @@ if __name__ == '__main__':
     md = 32
     bn = False
     params_discriminator['net']['shape'] = [1, 256, 96]
-    params_discriminator['optimization']['batch_size'] = 64*2
+    params_discriminator['batch_size'] = 64*2
 
 
     params_discriminator['stride'] = [2, 2, 2, 2, 2]
