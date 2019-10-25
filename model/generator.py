@@ -59,8 +59,8 @@ class Generator(nn.Module):
 if __name__ == '__main__':
     params_borders = dict()
     md = 32
-    input_shape = [1, 256, 160]
-    batch_size = 64*2
+    input_shape = [1, 256, 192]
+    batch_size = 64
 
     params_borders['nfilter'] = [md, 2 * md, md, md // 2]
     params_borders['shape'] = [[5, 5], [5, 5], [5, 5], [5, 5]]
@@ -89,10 +89,9 @@ if __name__ == '__main__':
     params_generator['spectral_norm'] = True
     params_generator['in_conv_shape'] = [8, 4]
 
-    print(score.shape[1])
-    model = Generator(params_generator, score.shape[1]*score.shape[2]*score.shape[3])
+    model = Generator(params_generator, score.shape[1]*score.shape[2]*score.shape[3]*2)
     print(model)
 
-    score = model(score)
+    score = model(torch.cat((score, score), 1))
 
     print(score.shape)
