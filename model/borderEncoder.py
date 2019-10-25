@@ -14,14 +14,13 @@ class BorderEncoder(nn.Module):
         curr_channel_count = self._params['data_size'] - 1
 
         for nfilters, kernel_shape, stride in zip(self._params['nfilter'], self._params['shape'], self._params['stride']):
-            print(curr_channel_count)
             self.encoder.append(nn.Sequential(
-                nn.utils.weight_norm(nn.Conv2d(in_channels=curr_channel_count, out_channels=nfilters,
+                nn.utils.weight_norm(nn.Conv2d(in_channels=curr_channel_count, out_channels=int(nfilters),
                                                kernel_size=kernel_shape, stride=stride,
                                                padding=2)),
                 nn.LeakyReLU(),
             ))
-            curr_channel_count = nfilters
+            curr_channel_count = int(nfilters)
 
     def forward(self, x):
         for module in self.encoder:
