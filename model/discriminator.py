@@ -47,7 +47,6 @@ class Discriminator(nn.Module):
 
     def forward(self, x):
         x = self.forward_conv(x)
-        print(x.size())
         x = x.view(x.size()[0], -1)
         x = self.forward_lin(x)
         return x
