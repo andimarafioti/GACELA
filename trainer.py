@@ -5,7 +5,7 @@ from model.borderEncoder import BorderEncoder
 from model.discriminator import Discriminator
 from model.generator import Generator
 
-import tqdm
+import time
 
 from utils.wassersteinGradientPenalty import calc_gradient_penalty
 
@@ -34,7 +34,8 @@ def train(args, device, train_loader, epoch, summary_writer):
     generator.train()
     discriminators.train()
     print('try')
-
+    start_time = time.time()
+    prev_iter_time = start_time
     # train_loader = tqdm.tqdm(train_loader)
     for batch_idx, data in enumerate(train_loader):
         print(batch_idx)
@@ -62,9 +63,9 @@ def train(args, device, train_loader, epoch, summary_writer):
 
         for index, discriminator in enumerate(discriminators):
             scale = 2**index
-            time = args['spectrogram_shape'][2]
-            start = int((time - (time // 4) * scale) / 2)
-            end = time - start
+            time_axis = args['spectrogram_shape'][2]
+            start = int((time_axis - (time_axis // 4) * scale) / 2)
+            end = time_axis - start
             x_fake = fake_spectrograms[:, :, :, start:end:scale]
             x_real = real_spectrograms[:, :, :, start:end:scale]
 
@@ -89,18 +90,57 @@ def train(args, device, train_loader, epoch, summary_writer):
         optim_d.step()
 
         if batch_idx % args['log_interval'] == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tGen Loss: {:.6f}, Disc Loss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(train_loader.dataset),
-                       100. * batch_idx / len(train_loader), disc_loss.item(), gen_loss.item()))
+            current_time = time.time()
+
+            print(" * Epoch: [{:2d}] [{:4d}/{:4d} ({:.0f}%)] "
+                  "Counter:{:2d}\t"
+                  "({:4.1f} min\t"
+                  "{:4.3f} examples/sec\t"
+                  "{:4.2f} sec/batch)\n"
+                  "   Disc batch loss:{:.8f}\t"
+                  "   Gen batch loss:{:.8f}\t".format(
+                int(epoch),
+                int(batch_idx*len(data)),
+                int(len(train_loader.dataset)/len(data)), 100. * batch_idx / len(train_loader), int(batch_idx),
+                (current_time - start_time) / 60,
+                args['log_interval'] * args['optimizer']['batch_size'] / (current_time - prev_iter_time),
+                (current_time - prev_iter_time) / args['log_interval'],
+                disc_loss.item(),
+                gen_loss.item()))
+            prev_iter_time = current_time
         if batch_idx % args['tensorboard_interval'] == 0:
-            summary_writer.add_scalar("Disc/Neg_Loss", -disc_loss)
-            summary_writer.add_scalar("Disc/Neg_Critic", d_loss_f - d_loss_r)
-            summary_writer.add_scalar("Disc/Loss_f", d_loss_f)
-            summary_writer.add_scalar("Disc/Loss_r", d_loss_r)
-            summary_writer.add_scalar("Gen/Loss", gen_loss)
+            summary_writer.add_scalar("Disc/Neg_Loss", -disc_loss, global_step=batch_idx)
+            summary_writer.add_scalar("Disc/Neg_Critic", d_loss_f - d_loss_r, global_step=batch_idx)
+            summary_writer.add_scalar("Disc/Loss_f", d_loss_f, global_step=batch_idx)
+            summary_writer.add_scalar("Disc/Loss_r", d_loss_r, global_step=batch_idx)
+            summary_writer.add_scalar("Gen/Loss", gen_loss, global_step=batch_idx)
 
             for index in range(4):
-                summary_writer.add_image("images/Real_Image/" + str(index), real_spectrograms[index])
-                summary_writer.add_image("images/Fake_Image/" + str(index), fake_spectrograms[index])
+                summary_writer.add_image("images/Real_Image/" + str(index), real_spectrograms[index], global_step=batch_idx)
+                summary_writer.add_image("images/Fake_Image/" + str(index), fake_spectrograms[index], global_step=batch_idx)
             # except Exception as e:
         # print(e)
+
+    def _print_log(idx, batch_size, curr_loss):
+        current_time = time.time()
+        print(" * Epoch: [{:2d}] [{:4d}/{:4d}] "
+              "Counter:{:2d}\t"
+              "({:4.1f} min\t"
+              "{:4.3f} examples/sec\t"
+              "{:4.2f} sec/batch)\n"
+              "   Disc batch loss:{:.8f}\t"
+              "Disc epoch loss:{:.8f}\n"
+              "   Gen batch loss:{:.8f}\t"
+              "Gen epoch loss:{:.8f}".format(
+                  int(self._epoch),
+                  int(idx+1),
+                  int(self._n_batch),
+                  int(self._counter),
+                  (current_time - self._time['start_time']) / 60,
+                  self._params['print_every'] * batch_size / (current_time - self._time['prev_iter_time']),
+                  (current_time - self._time['prev_iter_time']) / self._params['print_every'],
+                  curr_loss[0],
+                  self._epoch_loss_disc/(idx+1),
+                  curr_loss[1],
+                  self._epoch_loss_gen/(idx+1)))
+        self._time['prev_iter_time'] = current_time
