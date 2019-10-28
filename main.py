@@ -1,4 +1,5 @@
 import torch
+from torch.utils.tensorboard import SummaryWriter
 
 from data.trainDataset import TrainDataset
 from trainer import train
@@ -95,9 +96,10 @@ args['discriminator_in_shape'] = [1, 256, 128]
 args['generator_input'] = 2*6*4*2
 args['optimizer'] = params_optimization
 args['split'] = signal_split
-args['log_interval'] = 1
+args['log_interval'] = 50
 args['spectrogram_shape'] = params['net']['shape']
 args['gamma_gp'] = params['net']['gamma_gp']
+args['tensorboard_interval'] = 250
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -108,5 +110,8 @@ train_loader = torch.utils.data.DataLoader(trainDataset,
     batch_size=args['optimizer']['batch_size']//examples_per_file, shuffle=True)
 
 
+experiment_name = 'pytorch'
+summary_writer = SummaryWriter('../saved_results/' + experiment_name)
+
 for epoch in range(10):
-    train(args, device, train_loader, epoch)
+    train(args, device, train_loader, epoch, summary_writer)
