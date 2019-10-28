@@ -12,15 +12,15 @@ from utils.wassersteinGradientPenalty import calc_gradient_penalty
 __author__ = 'Andres'
 
 
-def train(args, device, train_loader, epoch):
+def train(args, device, train_loader, epoch, summary_writer):
     discriminators = nn.ModuleList(
             [Discriminator(args['discriminator'], args['discriminator_in_shape']) for _ in range(3)]
-        )
+        ).to(device)
 
-    left_border_encoder = BorderEncoder(args['borderEncoder'])
-    right_border_encoder = BorderEncoder(args['borderEncoder'])
+    left_border_encoder = BorderEncoder(args['borderEncoder']).to(device)
+    right_border_encoder = BorderEncoder(args['borderEncoder']).to(device)
 
-    generator = Generator(args['generator'], args['generator_input'])
+    generator = Generator(args['generator'], args['generator_input']).to(device)
 
     optim_g = torch.optim.Adam(list(generator.parameters()) + list(left_border_encoder.parameters()) +
                                list(right_border_encoder.parameters()),
@@ -37,7 +37,6 @@ def train(args, device, train_loader, epoch):
 
     # train_loader = tqdm.tqdm(train_loader)
     for batch_idx, data in enumerate(train_loader):
-        print('training!')
         print(batch_idx)
 
         data = data.to(device).float()
@@ -52,18 +51,11 @@ def train(args, device, train_loader, epoch):
         fake_right_borders = data[1::2, :, :, args['split'][0]+args['split'][1]:]
 
         encoded_left_border = left_border_encoder(fake_left_borders)
-        print('border')
-        print(encoded_left_border.shape)
         encoded_right_border = right_border_encoder(fake_right_borders)
         generated_spectrograms = generator(torch.cat((encoded_left_border, encoded_right_border), 1))
 
-        print(fake_left_borders.shape)
-        print(generated_spectrograms.shape)
-        print(fake_right_borders.shape)
 
         fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
-        print(fake_spectrograms.shape)
-        print('generator')
         d_loss_f = 0
         d_loss_r = 0
         d_loss_gp = 0
@@ -75,9 +67,6 @@ def train(args, device, train_loader, epoch):
             end = time - start
             x_fake = fake_spectrograms[:, :, :, start:end:scale]
             x_real = real_spectrograms[:, :, :, start:end:scale]
-            print(x_fake.shape)
-            print(x_real.shape)
-            print('aaaaaaaa')
 
             d_loss_f += torch.mean(discriminator(x_fake))
             d_loss_r += torch.mean(discriminator(x_real))
@@ -103,5 +92,15 @@ def train(args, device, train_loader, epoch):
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tGen Loss: {:.6f}, Disc Loss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                        100. * batch_idx / len(train_loader), disc_loss.item(), gen_loss.item()))
-    # except Exception as e:
+        if batch_idx % args['tensorboard_interval'] == 0:
+            summary_writer.add_scalar("Disc/Neg_Loss", -disc_loss)
+            summary_writer.add_scalar("Disc/Neg_Critic", d_loss_f - d_loss_r)
+            summary_writer.add_scalar("Disc/Loss_f", d_loss_f)
+            summary_writer.add_scalar("Disc/Loss_r", d_loss_r)
+            summary_writer.add_scalar("Gen/Loss", gen_loss)
+
+            for index in range(4):
+                summary_writer.add_image("images/Real_Image/" + str(index), real_spectrograms[index])
+                summary_writer.add_image("images/Fake_Image/" + str(index), fake_spectrograms[index])
+            # except Exception as e:
         # print(e)
