@@ -1,7 +1,6 @@
 import os
 import glob
 import numpy as np
-import scipy.io.wavfile
 import torch
 import torch.utils.data as data
 
@@ -16,7 +15,7 @@ class TrainDataset(data.Dataset):
 
         self.root = root
         self._window_size = window_size
-        self.filenames = glob.glob(os.path.join(root, "*.mat"))
+        self.filenames = glob.glob(os.path.join(root, "*.dat"))
         self._examples_per_file = examples_per_file
 
         for pattern in blacklist_patterns:
@@ -30,7 +29,7 @@ class TrainDataset(data.Dataset):
 
     def __getitem__(self, index):
         name = self.filenames[index % len(self.filenames)]
-        spectrogram = scipy.io.loadmat(name)['logspec']  # load audio
+        spectrogram = np.memmap(name, mode='r', dtype=np.float64).reshape([257, -1])
 
         starts = np.random.randint(0, spectrogram.shape[1]-self._window_size, self._examples_per_file)
 
