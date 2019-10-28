@@ -107,7 +107,8 @@ examples_per_file = 16
 trainDataset = TrainDataset("data/", window_size=512, examples_per_file=examples_per_file)
 
 train_loader = torch.utils.data.DataLoader(trainDataset,
-    batch_size=args['optimizer']['batch_size']//examples_per_file, shuffle=True)
+    batch_size=args['optimizer']['batch_size']//examples_per_file, shuffle=True,
+                                           num_workers=6, drop_last=True)
 
 
 experiment_name = 'pytorch'
