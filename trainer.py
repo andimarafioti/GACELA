@@ -7,6 +7,7 @@ from model.generator import Generator
 
 import time
 
+from utils.colorize import colorize
 from utils.wassersteinGradientPenalty import calc_gradient_penalty
 
 __author__ = 'Andres'
@@ -54,7 +55,6 @@ def train(args, device, train_loader, epoch, summary_writer):
         encoded_left_border = left_border_encoder(fake_left_borders)
         encoded_right_border = right_border_encoder(fake_right_borders)
         generated_spectrograms = generator(torch.cat((encoded_left_border, encoded_right_border), 1))
-
 
         fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
         d_loss_f = 0
@@ -116,31 +116,8 @@ def train(args, device, train_loader, epoch, summary_writer):
             summary_writer.add_scalar("Gen/Loss", gen_loss, global_step=batch_idx)
 
             for index in range(4):
-                summary_writer.add_image("images/Real_Image/" + str(index), real_spectrograms[index], global_step=batch_idx)
-                summary_writer.add_image("images/Fake_Image/" + str(index), fake_spectrograms[index], global_step=batch_idx)
+                summary_writer.add_image("images/Real_Image/" + str(index), colorize(real_spectrograms[index]), global_step=batch_idx)
+                summary_writer.add_image("images/Fake_Image/" + str(index), colorize(fake_spectrograms[index], -1, 1), global_step=batch_idx)
             # except Exception as e:
         # print(e)
 
-    def _print_log(idx, batch_size, curr_loss):
-        current_time = time.time()
-        print(" * Epoch: [{:2d}] [{:4d}/{:4d}] "
-              "Counter:{:2d}\t"
-              "({:4.1f} min\t"
-              "{:4.3f} examples/sec\t"
-              "{:4.2f} sec/batch)\n"
-              "   Disc batch loss:{:.8f}\t"
-              "Disc epoch loss:{:.8f}\n"
-              "   Gen batch loss:{:.8f}\t"
-              "Gen epoch loss:{:.8f}".format(
-                  int(self._epoch),
-                  int(idx+1),
-                  int(self._n_batch),
-                  int(self._counter),
-                  (current_time - self._time['start_time']) / 60,
-                  self._params['print_every'] * batch_size / (current_time - self._time['prev_iter_time']),
-                  (current_time - self._time['prev_iter_time']) / self._params['print_every'],
-                  curr_loss[0],
-                  self._epoch_loss_disc/(idx+1),
-                  curr_loss[1],
-                  self._epoch_loss_gen/(idx+1)))
-        self._time['prev_iter_time'] = current_time
