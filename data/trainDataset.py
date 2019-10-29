@@ -16,11 +16,11 @@ class TrainDataset(data.Dataset):
         self.root = root
         self._window_size = window_size
         self.filenames = glob.glob(os.path.join(root, "*.dat"))
-        np.random.shuffle(self.filenames)
-        self._examples_per_file = examples_per_file
-
         for pattern in blacklist_patterns:
             self.filenames = self.blacklist(self.filenames, pattern)
+
+        np.random.shuffle(self.filenames)
+        self._examples_per_file = examples_per_file
 
     def blacklist(self, filenames, pattern):
         return [filename for filename in filenames if pattern not in filename]
