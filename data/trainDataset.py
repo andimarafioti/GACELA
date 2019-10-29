@@ -10,7 +10,7 @@ __author__ = 'Andres'
 
 
 class TrainDataset(data.Dataset):
-    def __init__(self, root, window_size, examples_per_file=8, blacklist_patterns=None, loaded_files_buffer=8, file_usages=10):
+    def __init__(self, root, window_size, examples_per_file=8, blacklist_patterns=None, loaded_files_buffer=10, file_usages=10):
         assert (isinstance(root, str))
         if blacklist_patterns is None:
             blacklist_patterns = []
