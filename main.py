@@ -3,6 +3,9 @@ from torch.utils.tensorboard import SummaryWriter
 
 from data.trainDataset import TrainDataset
 from trainer import train
+import logging
+
+logging.getLogger().setLevel(logging.DEBUG)  # set root logger to debug
 
 __author__ = 'Andres'
 
@@ -107,8 +110,8 @@ examples_per_file = 16
 trainDataset = TrainDataset("data/", window_size=512, examples_per_file=examples_per_file)
 
 train_loader = torch.utils.data.DataLoader(trainDataset,
-    batch_size=args['optimizer']['batch_size']//examples_per_file, shuffle=True,
-                                           num_workers=6, drop_last=True)
+    batch_size=args['optimizer']['batch_size']//examples_per_file, shuffle=True)#,
+                                           #num_workers=1, drop_last=True)
 
 
 experiment_name = 'pytorch'
