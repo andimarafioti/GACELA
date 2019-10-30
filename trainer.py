@@ -75,7 +75,7 @@ def train(args, device, train_loader, epoch, summary_writer):
             d_loss_gp += torch.mean(calc_gradient_penalty(discriminator, x_real, x_fake, args['gamma_gp']))
 
         disc_loss = -(d_loss_r - d_loss_f) + d_loss_gp
-        gen_loss = d_loss_f
+        gen_loss = - d_loss_f
 
         gen_loss.backward(retain_graph=True)
         optim_g.step()
