@@ -2,10 +2,18 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 from data.trainDataset import TrainDataset
-from trainer import train
+from new_trainer import train
 import logging
 
-logging.getLogger().setLevel(logging.DEBUG)  # set root logger to debug
+# logging.getLogger().setLevel(logging.DEBUG)  # set root logger to debug
+
+"""Just so logging works..."""
+formatter = logging.Formatter('%(name)s:%(levelname)s:%(message)s')
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
+console_handler.setFormatter(formatter)
+logging.getLogger().addHandler(console_handler)
+"""Just so logging works..."""
 
 __author__ = 'Andres'
 
@@ -96,7 +104,7 @@ args['generator'] = params_generator
 args['discriminator'] = params_discriminator
 args['borderEncoder'] = params_generator['borders']
 args['discriminator_in_shape'] = [1, 256, 128]
-args['generator_input'] = 2*6*4*2
+args['generator_input'] = 2*6*4*2+24*4
 args['optimizer'] = params_optimization
 args['split'] = signal_split
 args['log_interval'] = 50
