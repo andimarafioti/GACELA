@@ -135,7 +135,8 @@ def train(args, device, train_loader, epoch, summary_writer):
                   "{:4.3f} examples/sec\t"
                   "{:4.2f} sec/batch)\n"
                   "   Disc batch loss:{:.8f}\t"
-                  "   Gen batch loss:{:.8f}\t".format(
+                  "   Gen batch loss:{:.8f}\t"
+                  "   Reg batch :{:.8f}\t".format(
                 int(epoch),
                 int(batch_idx*len(data)),
                 int(len(train_loader.dataset)/len(data)), 100. * batch_idx / len(train_loader), int(batch_idx),
@@ -143,7 +144,8 @@ def train(args, device, train_loader, epoch, summary_writer):
                 args['log_interval'] * args['optimizer']['batch_size'] / (current_time - prev_iter_time),
                 (current_time - prev_iter_time) / args['log_interval'],
                 disc_loss.item(),
-                gen_loss.item()))
+                gen_loss.item(),
+                d_loss_gp.item()))
             prev_iter_time = current_time
         if batch_idx % args['tensorboard_interval'] == 0:
             summary_writer.add_scalar("Disc/Neg_Loss", -disc_loss, global_step=batch_idx)
