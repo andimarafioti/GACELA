@@ -22,17 +22,17 @@ class Generator(nn.Module):
         for nfilters, kernel_shape, stride, padding in zip(self._params['nfilter'][:-1], self._params['shape'][:-1],
                                                   self._params['stride'][:-1], self._params['padding'][:-1]):
             self.convGenerator.append(nn.Sequential(
-                nn.utils.weight_norm(nn.ConvTranspose2d(in_channels=curr_channel_count, out_channels=nfilters,
+                nn.ConvTranspose2d(in_channels=curr_channel_count, out_channels=nfilters,
                                                kernel_size=kernel_shape, stride=stride,
-                                               padding=padding)),
-                nn.LeakyReLU(),
+                                               padding=padding),
+                nn.ReLU(),
             ))
             curr_channel_count = nfilters
 
         self.convGenerator.append(nn.Sequential(
-            nn.utils.weight_norm(nn.ConvTranspose2d(in_channels=curr_channel_count, out_channels=self._params['nfilter'][-1],
+            nn.ConvTranspose2d(in_channels=curr_channel_count, out_channels=self._params['nfilter'][-1],
                                            kernel_size=self._params['shape'][-1], stride=self._params['stride'][-1],
-                                           padding=self._params['padding'][-1])),
+                                           padding=self._params['padding'][-1]),
             nn.Tanh(),
         ))
 

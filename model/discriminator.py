@@ -15,9 +15,9 @@ class Discriminator(nn.Module):
 
         for nfilters, kernel_shape, stride in zip(self._params['nfilter'], self._params['shape'], self._params['stride']):
             self.conv_discriminator.append(nn.Sequential(
-                nn.utils.weight_norm(nn.Conv2d(in_channels=curr_channel_count, out_channels=nfilters,
+                nn.Conv2d(in_channels=curr_channel_count, out_channels=nfilters,
                                                kernel_size=kernel_shape, stride=stride,
-                                               padding=2)),
+                                               padding=2),
                 nn.LeakyReLU(),
             ))
             curr_channel_count = nfilters
@@ -27,8 +27,7 @@ class Discriminator(nn.Module):
         for dim in shapeAfterConvs[1:]:
             linearInputChannels = linearInputChannels*dim
 
-        self.lin_discriminator = nn.ModuleList([nn.Sequential(nn.utils.weight_norm(nn.Linear(linearInputChannels, 1)),
-                                                              nn.Sigmoid())])
+        self.lin_discriminator = nn.ModuleList([nn.Sequential(nn.Linear(linearInputChannels, 1))])
 
     def _infer_conv_output_shape(self, batch_size, input_shape):
         mock = torch.zeros(batch_size, *input_shape)
