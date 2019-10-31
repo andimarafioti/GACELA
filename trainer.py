@@ -8,7 +8,7 @@ from model.generator import Generator
 import time
 
 from utils.colorize import colorize
-from utils.wassersteinGradientPenalty import calc_gradient_penalty
+from utils.wassersteinGradientPenalty import calc_gradient_penalty, wgan_regularization, calc_gradient_penalty_bayes
 
 __author__ = 'Andres'
 
@@ -30,8 +30,9 @@ def train(args, device, train_loader, epoch, summary_writer):
     optim_d = torch.optim.Adam(discriminators.parameters(),
                                lr=args['optimizer']['discriminator']['learning_rate'],
                                betas=(args['optimizer']['discriminator']['kwargs']))
-
     # try:
+    left_border_encoder.train()
+    right_border_encoder.train()
     generator.train()
     discriminators.train()
     print('try')
@@ -54,12 +55,16 @@ def train(args, device, train_loader, epoch, summary_writer):
 
         encoded_left_border = left_border_encoder(fake_left_borders)
         encoded_right_border = right_border_encoder(fake_right_borders)
-        generated_spectrograms = generator(torch.cat((encoded_left_border, encoded_right_border), 1))
+        encoded_size = encoded_left_border.size()
+        noise = torch.rand(encoded_size[0], 4, encoded_size[2], encoded_size[3])
+        generated_spectrograms = generator(torch.cat((encoded_left_border, encoded_right_border, noise), 1))
 
         fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
         d_loss_f = 0
         d_loss_r = 0
         d_loss_gp = 0
+        d_loss_gp_2 = 0
+        d_loss_gp_3 = 0
 
         for index, discriminator in enumerate(discriminators):
             scale = 2**index
@@ -72,20 +77,28 @@ def train(args, device, train_loader, epoch, summary_writer):
             d_loss_f += torch.mean(discriminator(x_fake))
             d_loss_r += torch.mean(discriminator(x_real))
 
-            d_loss_gp += torch.mean(calc_gradient_penalty(discriminator, x_real, x_fake, args['gamma_gp']))
+            grad_pen = calc_gradient_penalty_bayes(discriminator, x_real, x_fake, args['gamma_gp'])
+            d_loss_gp += torch.mean(grad_pen)
+            grad_pen_2 = wgan_regularization(discriminator, x_real, x_fake, args['gamma_gp'])
+            d_loss_gp_2 += grad_pen_2.mean()
+            grad_pen_3 = calc_gradient_penalty(discriminator, x_real, x_fake, args['gamma_gp'])
+            d_loss_gp_3 += grad_pen_3.mean()
 
-        disc_loss = -(d_loss_r - d_loss_f) + d_loss_gp
+        print(d_loss_gp)
+        print(d_loss_gp_2)
+        print(d_loss_gp_3)
+        disc_loss = d_loss_f - d_loss_r + d_loss_gp_2
         gen_loss = - d_loss_f
 
-        gen_loss.backward(retain_graph=True)
-        optim_g.step()
+        # gen_loss.backward(retain_graph=True)
+        # optim_g.step()
 
-        for _ in range(args['optimizer']['n_critic']-1):
-            optim_d.zero_grad()
+        for _ in range(args['optimizer']['n_critic']+2):
+            # optim_d.zero_grad()
             disc_loss.backward(retain_graph=True)
             optim_d.step()
 
-        optim_d.zero_grad()
+        # optim_d.zero_grad()
         disc_loss.backward()
         optim_d.step()
 
