@@ -73,6 +73,6 @@ def calc_gradient_penalty_bayes(discriminator, real_data, fake_data, gamma):
     gradients = autograd.grad(outputs=disc_interpolates, inputs=interpolates,
                               grad_outputs=torch.ones(disc_interpolates.size()).to(device),
                               create_graph=True, retain_graph=True, only_inputs=True)[0]
-    gradient_penalty = ((gradients.norm(2, dim=[1,2,3]) - 1) ** 2).mean() * gamma
+    gradient_penalty = ((gradients.norm(2) - 1) ** 2) * gamma
 
     return gradient_penalty
