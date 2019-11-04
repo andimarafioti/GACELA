@@ -62,6 +62,7 @@ class TrainDataset(data.Dataset):
 
         filename = np.random.choice(loaded_files)
         spectrogram = self._loaded_files[filename][1]
+        spectrogram = spectrogram[:256, :int(0.9*spectrogram.shape[1])]  # train dataset
 
         starts = np.random.randint(0, spectrogram.shape[1]-self._window_size, self._examples_per_file)
 
