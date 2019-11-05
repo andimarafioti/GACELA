@@ -2,7 +2,7 @@ import torch
 from torch import nn
 
 from model.borderEncoder import BorderEncoder
-from model.discriminator import Discriminator
+from model.discriminatorpow2loss import Discriminator
 from model.generator import Generator
 
 import time
@@ -41,7 +41,6 @@ def train(args, device, train_loader, epoch, summary_writer):
     prev_iter_time = start_time
     # train_loader = tqdm.tqdm(train_loader)
     for batch_idx, data in enumerate(train_loader):
-        print(batch_idx)
 
         data = data.to(device).float()
         data = data.view(args['optimizer']['batch_size'], *args['spectrogram_shape'])
