@@ -138,9 +138,9 @@ def train(args, device, train_loader, epoch, summary_writer, batch_idx=0):
             if batch_idx % args['tensorboard_interval'] == 0:
                 if batch_idx % args['tensorboard_interval'] == 0:
                     summary_writer.add_scalar("Disc/Neg_Loss", -disc_loss, global_step=batch_idx)
-                    summary_writer.add_scalar("Disc/Neg_Critic", d_loss_f - d_loss_r, global_step=batch_idx)
-                    summary_writer.add_scalar("Disc/Loss_f", d_loss_f, global_step=batch_idx)
-                    summary_writer.add_scalar("Disc/Loss_r", d_loss_r, global_step=batch_idx)
+                    summary_writer.add_scalar("Disc/Neg_Critic", d_loss_f.mean() - d_loss_r.mean(), global_step=batch_idx)
+                    summary_writer.add_scalar("Disc/Loss_f", d_loss_f.mean(), global_step=batch_idx)
+                    summary_writer.add_scalar("Disc/Loss_r", d_loss_r.mean(), global_step=batch_idx)
                     summary_writer.add_scalar("Gen/Loss", gen_loss, global_step=batch_idx)
                     real_c = consistency((real_spectrograms - 1) * 5)
                     fake_c = consistency((generated_spectrograms - 1) * 5)
