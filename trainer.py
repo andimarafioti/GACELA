@@ -57,7 +57,6 @@ def train(args, device, train_loader, epoch, summary_writer, batch_idx=0):
     prev_iter_time = start_time
     d_loss_gp_to_summarize = 0
 
-    # train_loader = tqdm.tqdm(train_loader)
     try:
         for batch_idx, data in enumerate(train_loader, batch_idx):
             print(batch_idx)
@@ -69,11 +68,8 @@ def train(args, device, train_loader, epoch, summary_writer, batch_idx=0):
 
             # optimize D
             for _ in range(args['optimizer']['n_critic']):
-                #             d_loss_gp_to_print = 0
-                #             disc_loss_to_print = 0
                 for index, (discriminator, optim_d) in enumerate(zip(discriminators, optims_d)):
                     optim_d.zero_grad()
-                    #                 print(index)
                     encoded_left_border = left_border_encoder(fake_left_borders)
                     encoded_right_border = right_border_encoder(fake_right_borders)
                     encoded_size = encoded_left_border.size()
