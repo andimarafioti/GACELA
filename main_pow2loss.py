@@ -19,7 +19,7 @@ __author__ = 'Andres'
 
 
 signal_split = [192, 128, 192]
-md = 4
+md = 32
 
 params_discriminator = dict()
 params_discriminator['stride'] = [2,2,2,2,2]
@@ -104,7 +104,7 @@ args['generator'] = params_generator
 args['discriminator'] = params_discriminator
 args['borderEncoder'] = params_generator['borders']
 args['discriminator_in_shape'] = [1, 256, 128]
-args['generator_input'] = 2*6*4*2
+args['generator_input'] = 2*6*4*2*8
 args['optimizer'] = params_optimization
 args['split'] = signal_split
 args['log_interval'] = 50
@@ -115,14 +115,14 @@ args['tensorboard_interval'] = 250
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 examples_per_file = 16
-trainDataset = TrainDataset("data/", window_size=512, examples_per_file=examples_per_file)
+trainDataset = TrainDataset("../data/Maestro_spectrograms_mep/", window_size=512, examples_per_file=examples_per_file)
 
 train_loader = torch.utils.data.DataLoader(trainDataset,
-    batch_size=args['optimizer']['batch_size']//examples_per_file, shuffle=True)#,
-                                           #num_workers=1, drop_last=True)
+    batch_size=args['optimizer']['batch_size']//examples_per_file, shuffle=True,
+                                           num_workers=4, drop_last=True)
 
 
-experiment_name = 'pytorch_nc2'
+experiment_name = 'pytorch_nc1_pow2loss'
 summary_writer = SummaryWriter('../saved_results/' + experiment_name)
 
 for epoch in range(10):
