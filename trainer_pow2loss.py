@@ -6,9 +6,7 @@ from model.discriminatorpow2loss import Discriminator
 from model.generator import Generator
 
 import time
-
 from utils.colorize import colorize
-from utils.wassersteinGradientPenalty import calc_gradient_penalty
 
 __author__ = 'Andres'
 
