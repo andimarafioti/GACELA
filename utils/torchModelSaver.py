@@ -30,11 +30,14 @@ class TorchModelSaver(object):
 
         generator.load_state_dict(checkpoint['generator'])
         discriminators.load_state_dict(checkpoint['discriminators'])
-        left_border_encoder.load_state_dict(checkpoint['left_border_encoder'])
-        right_border_encoder.load_state_dict(checkpoint['right_border_encoder'])
+        left_border_encoder.load_state_dict(checkpoint['left_encoder'])
+        right_border_encoder.load_state_dict(checkpoint['right_encoder'])
         optim_g.load_state_dict(checkpoint['optim_g'])
 
         for index, optim_d in enumerate(optims_d):
             optim_d.load_state_dict(checkpoint['optim_d_' + str(index)])
 
         return generator, discriminators, left_border_encoder, right_border_encoder, optim_g, optims_d
+
+    def makeFolder(self):
+        os.mkdir(self._save_path + self._experiment_name + '_checkpoints')
