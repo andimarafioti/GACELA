@@ -48,7 +48,7 @@ def train(args, device, train_loader, epoch, summary_writer, batch_idx=0):
     else:
         generator, discriminators, left_border_encoder, right_border_encoder, optim_g, optims_d = \
             model_saver.loadModel(generator, discriminators, left_border_encoder, right_border_encoder, optim_g,
-                                  optims_d, batch_idx, epoch)
+                                  optims_d, batch_idx, epoch-1)
 
     print('try')
     start_time = time.time()
