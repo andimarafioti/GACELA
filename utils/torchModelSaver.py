@@ -39,5 +39,15 @@ class TorchModelSaver(object):
 
         return generator, discriminators, left_border_encoder, right_border_encoder, optim_g, optims_d
 
+    def loadGenerator(self, generator, left_border_encoder, right_border_encoder, batch_idx, epoch):
+        load_path = os.path.join(self._save_path + self._experiment_name + '_checkpoints', '%02d_%04d.pt' % (epoch, batch_idx))
+        checkpoint = torch.load(load_path)
+
+        generator.load_state_dict(checkpoint['generator'])
+        left_border_encoder.load_state_dict(checkpoint['left_encoder'])
+        right_border_encoder.load_state_dict(checkpoint['right_encoder'])
+
+        return generator, left_border_encoder, right_border_encoder
+
     def makeFolder(self):
         os.mkdir(self._save_path + self._experiment_name + '_checkpoints')
