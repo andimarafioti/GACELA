@@ -55,7 +55,7 @@ def train(args, device, train_loader, epoch, summary_writer, batch_idx=0):
     prev_iter_time = start_time
 
     try:
-       for batch_idx, data in enumerate(train_loader):
+       for batch_idx, data in enumerate(train_loader, batch_idx):
             data = data.to(device).float()
             data = data.view(args['optimizer']['batch_size'], *args['spectrogram_shape'])
             real_spectrograms = data[::2]
