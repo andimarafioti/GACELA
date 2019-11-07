@@ -124,9 +124,10 @@ train_loader = torch.utils.data.DataLoader(trainDataset,
                                            num_workers=4, drop_last=True)
 
 summary_writer = SummaryWriter(args['save_path'] + args['experiment_name'] + '_summary')
-start_at = 0
+start_at_step = 0
+start_at_epoch = 0
 
-for epoch in range(10):
-    start_at, can_restart = train(args, device, train_loader, epoch, summary_writer, start_at)
+for epoch in range(start_at_epoch, 10):
+    start_at_step, can_restart = train(args, device, train_loader, epoch, summary_writer, start_at_step)
     if not can_restart:
         break
