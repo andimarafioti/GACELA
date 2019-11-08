@@ -150,9 +150,9 @@ class GANSystem(object):
 					summary_writer.add_scalar("Gen/R_STD_Con", std_R_Con, global_step=batch_idx)
 					summary_writer.add_scalar("Gen/STD_diff", torch.abs(std_F_Con - std_R_Con), global_step=batch_idx)
 
-				for index in range(4):
-					summary_writer.add_image("images/Real_Image/" + str(index), colorize(real_spectrograms[index]), global_step=batch_idx)
-					summary_writer.add_image("images/Fake_Image/" + str(index), colorize(fake_spectrograms[index], -1, 1), global_step=batch_idx)
+					for index in range(4):
+						summary_writer.add_image("images/Real_Image/" + str(index), colorize(real_spectrograms[index]), global_step=batch_idx)
+						summary_writer.add_image("images/Fake_Image/" + str(index), colorize(fake_spectrograms[index], -1, 1), global_step=batch_idx)
 				if batch_idx % self.args['save_interval'] == 0:
 					self.model_saver.saveModel(self, batch_idx, epoch)
 		except KeyboardInterrupt:
