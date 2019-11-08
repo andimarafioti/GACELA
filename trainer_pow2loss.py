@@ -13,12 +13,6 @@ from utils.torchModelSaver import TorchModelSaver
 __author__ = 'Andres'
 
 
-def init_weights(m):
-    if type(m) == nn.Linear:
-        torch.nn.init.xavier_uniform_(m.weight)
-        m.bias.data.fill_(0.0)
-
-
 def train(args, device, train_loader, epoch, summary_writer, batch_idx=0):
     discriminators = nn.ModuleList(
         [Discriminator(args['discriminator'], args['discriminator_in_shape'])
@@ -40,11 +34,7 @@ def train(args, device, train_loader, epoch, summary_writer, batch_idx=0):
     model_saver = TorchModelSaver(args['experiment_name'], args['save_path'])
 
     if batch_idx == 0 and epoch == 0:
-        model_saver.makeFolder()
-        discriminators.apply(init_weights)
-        left_border_encoder.apply(init_weights)
-        right_border_encoder.apply(init_weights)
-        generator.apply(init_weights)
+        model_saver.initModel(generator, discriminators, left_border_encoder, right_border_encoder)
     else:
         generator, discriminators, left_border_encoder, right_border_encoder, optim_g, optims_d = \
             model_saver.loadModel(generator, discriminators, left_border_encoder, right_border_encoder, optim_g,
@@ -114,7 +104,6 @@ def train(args, device, train_loader, epoch, summary_writer, batch_idx=0):
 
             gen_loss.backward()
             optim_g.step()
-
 
             if batch_idx % args['log_interval'] == 0:
                 current_time = time.time()

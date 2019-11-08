@@ -1,6 +1,7 @@
 import os
 
 import torch
+from torch import nn
 
 __author__ = 'Andres'
 
@@ -49,5 +50,18 @@ class TorchModelSaver(object):
 
         return generator, left_border_encoder, right_border_encoder
 
+    def initModel(self, generator, discriminators, left_border_encoder, right_border_encoder):
+        self.makeFolder()
+        discriminators.apply(init_weights)
+        left_border_encoder.apply(init_weights)
+        right_border_encoder.apply(init_weights)
+        generator.apply(init_weights)
+
     def makeFolder(self):
         os.mkdir(self._save_path + self._experiment_name + '_checkpoints')
+
+
+def init_weights(m):
+    if type(m) == nn.Linear:
+        torch.nn.init.xavier_uniform_(m.weight)
+        m.bias.data.fill_(0.0)
