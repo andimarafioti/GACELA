@@ -2,7 +2,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 from data.trainDataset import TrainDataset
-from trainer_pow2loss import train
+from ganSystem import GANSystem
 import logging
 
 # logging.getLogger().setLevel(logging.DEBUG)  # set root logger to debug
@@ -123,7 +123,8 @@ summary_writer = SummaryWriter(args['save_path'] + args['experiment_name'] + '_s
 start_at_step = 0
 start_at_epoch = 0
 
+ganSystem = GANSystem(args)
 for epoch in range(start_at_epoch, 10):
-    start_at_step, can_restart = train(args, device, train_loader, epoch, summary_writer, start_at_step)
+    start_at_step, can_restart = ganSystem.train(train_loader, epoch, summary_writer, start_at_step)
     if not can_restart:
         break
