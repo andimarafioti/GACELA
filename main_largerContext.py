@@ -105,7 +105,7 @@ args['log_interval'] = 50
 args['spectrogram_shape'] = params['net']['shape']
 args['gamma_gp'] = params['net']['gamma_gp']
 args['tensorboard_interval'] = 250
-args['save_path'] = 'saved_results/'
+args['save_path'] = '../saved_results/'
 args['experiment_name'] = 'pytorch_nc1_largerContext'
 args['save_interval'] = 1000
 
@@ -116,8 +116,8 @@ examples_per_file = 16
 trainDataset = TrainDataset("data/", window_size=1024, examples_per_file=examples_per_file)
 
 train_loader = torch.utils.data.DataLoader(trainDataset,
-    batch_size=args['optimizer']['batch_size']//examples_per_file, shuffle=True)#,
-                                           #num_workers=4, drop_last=True)
+    batch_size=args['optimizer']['batch_size']//examples_per_file, shuffle=True,
+                                           num_workers=4, drop_last=True)
 
 summary_writer = SummaryWriter(args['save_path'] + args['experiment_name'] + '_summary')
 start_at_step = 0
