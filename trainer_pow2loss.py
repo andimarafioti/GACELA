@@ -161,6 +161,8 @@ def train(args, device, train_loader, epoch, summary_writer, batch_idx=0):
             if batch_idx % args['save_interval'] == 0:
                 model_saver.saveModel(generator, discriminators, left_border_encoder, right_border_encoder, optim_g,
                                       optims_d, batch_idx, epoch)
+       model_saver.saveModel(generator, discriminators, left_border_encoder, right_border_encoder, optim_g,
+                                      optims_d, batch_idx, epoch)
        can_restart = True
        return batch_idx, can_restart
     except KeyboardInterrupt:
