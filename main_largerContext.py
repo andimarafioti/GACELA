@@ -42,6 +42,7 @@ params_generator['borders']['nfilter'] = [md, 2*md, md, md/2]
 params_generator['borders']['shape'] = [[5, 5],[5, 5],[5, 5],[5, 5]]
 params_generator['borders']['stride'] = [2, 2, 3, 4]
 params_generator['borders']['data_size'] = 2
+params_generator['borders']['border_scale'] = 2
 # This does not work because of flipping, border 2 need to be flipped tf.reverse(l, axis=[1]), ask Nathanael
 params_generator['borders']['width_full'] = None
 
@@ -100,12 +101,11 @@ args['discriminator_in_shape'] = [1, 256, 128]
 args['generator_input'] = 2*6*5*2*8+6*5*4
 args['optimizer'] = params_optimization
 args['split'] = signal_split
-args['border_scale'] = 2
 args['log_interval'] = 50
 args['spectrogram_shape'] = params['net']['shape']
 args['gamma_gp'] = params['net']['gamma_gp']
 args['tensorboard_interval'] = 250
-args['save_path'] = '../saved_results/'
+args['save_path'] = 'saved_results/'
 args['experiment_name'] = 'pytorch_nc1_largerContext'
 args['save_interval'] = 1000
 
@@ -113,11 +113,11 @@ args['save_interval'] = 1000
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 examples_per_file = 16
-trainDataset = TrainDataset("../data/Maestro_spectrograms_mep/", window_size=1024, examples_per_file=examples_per_file)
+trainDataset = TrainDataset("data/", window_size=1024, examples_per_file=examples_per_file)
 
 train_loader = torch.utils.data.DataLoader(trainDataset,
-    batch_size=args['optimizer']['batch_size']//examples_per_file, shuffle=True,
-                                           num_workers=4, drop_last=True)
+    batch_size=args['optimizer']['batch_size']//examples_per_file, shuffle=True)#,
+                                           #num_workers=4, drop_last=True)
 
 summary_writer = SummaryWriter(args['save_path'] + args['experiment_name'] + '_summary')
 start_at_step = 0
