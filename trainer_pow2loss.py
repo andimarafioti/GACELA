@@ -13,149 +13,154 @@ from utils.torchModelSaver import TorchModelSaver
 __author__ = 'Andres'
 
 
-def train(args, device, train_loader, epoch, summary_writer, batch_idx=0):
-    discriminators = nn.ModuleList(
-        [Discriminator(args['discriminator'], args['discriminator_in_shape'])
-         for _ in range(args['discriminator_count'])]).to(device)
+class GANSystem(object):
+	def __init__(self, args):
+		super(GANSystem, self).__init__()
+		self.args = args
+		device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+		self.discriminators = nn.ModuleList(
+			[Discriminator(args['discriminator'], args['discriminator_in_shape'])
+			 for _ in range(args['discriminator_count'])]).to(device)
 
-    left_border_encoder = BorderEncoder(args['borderEncoder']).to(device)
-    right_border_encoder = BorderEncoder(args['borderEncoder']).to(device)
+		self.left_border_encoder = BorderEncoder(args['borderEncoder']).to(device)
+		self.right_border_encoder = BorderEncoder(args['borderEncoder']).to(device)
 
-    generator = Generator(args['generator'], args['generator_input']).to(device)
+		self.generator = Generator(args['generator'], args['generator_input']).to(device)
 
-    optim_g = torch.optim.Adam(list(generator.parameters()) + list(left_border_encoder.parameters()) +
-                               list(right_border_encoder.parameters()),
-                               lr=args['optimizer']['generator']['learning_rate'],
-                               betas=(0.5, 0.9))
-    optims_d = [torch.optim.Adam(discriminator.parameters(),
-                                 lr=args['optimizer']['discriminator']['learning_rate'],
-                                 betas=(0.5, 0.9)) for discriminator in discriminators]
+		self.optim_g = torch.optim.Adam(list(self.generator.parameters()) + list(self.left_border_encoder.parameters()) +
+								   list(self.right_border_encoder.parameters()),
+								   lr=args['optimizer']['generator']['learning_rate'],
+								   betas=(0.5, 0.9))
+		self.optims_d = [torch.optim.Adam(discriminator.parameters(),
+									 lr=args['optimizer']['discriminator']['learning_rate'],
+									 betas=(0.5, 0.9)) for discriminator in self.discriminators]
 
-    model_saver = TorchModelSaver(args['experiment_name'], args['save_path'])
+		self.model_saver = TorchModelSaver(args['experiment_name'], args['save_path'])
 
-    if batch_idx == 0 and epoch == 0:
-        model_saver.initModel(generator, discriminators, left_border_encoder, right_border_encoder)
-    else:
-        generator, discriminators, left_border_encoder, right_border_encoder, optim_g, optims_d = \
-            model_saver.loadModel(generator, discriminators, left_border_encoder, right_border_encoder, optim_g,
-                                  optims_d, batch_idx, epoch-1)
+	def train(self, train_loader, epoch, summary_writer, batch_idx=0):
+		device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    print('try')
-    start_time = time.time()
-    prev_iter_time = start_time
+		if batch_idx == 0 and epoch == 0:
+			self.model_saver.initModel(self)
+		else:
+			self.model_saver.loadModel(self, batch_idx, epoch-1)  # test that this works
 
-    try:
-       for batch_idx, data in enumerate(train_loader, batch_idx):
-            data = data.to(device).float()
-            data = data.view(args['optimizer']['batch_size'], *args['spectrogram_shape'])
-            real_spectrograms = data[::2]
-            fake_left_borders = data[1::2, :, :, :args['split'][0]]
-            fake_right_borders = data[1::2, :, :, args['split'][0] + args['split'][1]:]
+		print('try')
+		start_time = time.time()
+		prev_iter_time = start_time
 
-            # optimize D
-            for _ in range(args['optimizer']['n_critic']):
-                for index, (discriminator, optim_d) in enumerate(zip(discriminators, optims_d)):
-                    optim_d.zero_grad()
-                    encoded_left_border = left_border_encoder(fake_left_borders)
-                    encoded_right_border = right_border_encoder(fake_right_borders)
-                    encoded_size = encoded_left_border.size()
-                    noise = torch.rand(encoded_size[0], 4, encoded_size[2], encoded_size[3]).to(device)
-                    generated_spectrograms = generator(torch.cat((encoded_left_border, encoded_right_border, noise), 1))
+		try:
+			for batch_idx, data in enumerate(train_loader, batch_idx):
+				data = data.to(device).float()
+				data = data.view(self.args['optimizer']['batch_size'], *self.args['spectrogram_shape'])
+				real_spectrograms = data[::2]
+				fake_left_borders = data[1::2, :, :, :self.args['split'][0]]
+				fake_right_borders = data[1::2, :, :, self.args['split'][0] + self.args['split'][1]:]
 
-                    fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
-                    scale = 2 ** index
-                    time_axis = args['spectrogram_shape'][2]
-                    start = int((time_axis - (time_axis // (2**(len(discriminators)-1))) * scale) / 2)
-                    end = time_axis - start
-                    x_fake = fake_spectrograms[:, :, :, start:end:scale].detach()
-                    x_real = real_spectrograms[:, :, :, start:end:scale].detach()
+				# optimize D
+				for _ in range(self.args['optimizer']['n_critic']):
+					for index, (discriminator, optim_d) in enumerate(zip(self.discriminators, self.optims_d)):
+						optim_d.zero_grad()
+						encoded_left_border = self.left_border_encoder(fake_left_borders)
+						encoded_right_border = self.right_border_encoder(fake_right_borders)
+						encoded_size = encoded_left_border.size()
+						noise = torch.rand(encoded_size[0], 4, encoded_size[2], encoded_size[3]).to(device)
+						generated_spectrograms = self.generator(torch.cat((encoded_left_border, encoded_right_border, noise), 1))
 
-                    d_loss_f = discriminator(x_fake)
-                    d_loss_r = discriminator(x_real)
+						fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
+						scale = 2 ** index
+						time_axis = args['spectrogram_shape'][2]
+						start = int((time_axis - (time_axis // (2**(len(self.discriminators)-1))) * scale) / 2)
+						end = time_axis - start
+						x_fake = fake_spectrograms[:, :, :, start:end:scale].detach()
+						x_real = real_spectrograms[:, :, :, start:end:scale].detach()
 
-                    disc_loss = torch.mean(torch.pow(d_loss_r - 1.0, 2)) + torch.mean(torch.pow(d_loss_f, 2))
+						d_loss_f = discriminator(x_fake)
+						d_loss_r = discriminator(x_real)
 
-                    disc_loss.backward()
-                    optim_d.step()
+						disc_loss = torch.mean(torch.pow(d_loss_r - 1.0, 2)) + torch.mean(torch.pow(d_loss_f, 2))
 
-            # optimize G
+						disc_loss.backward()
+						optim_d.step()
 
-            optim_g.zero_grad()
+				# optimize G
 
-            encoded_left_border = left_border_encoder(fake_left_borders)
-            encoded_right_border = right_border_encoder(fake_right_borders)
-            encoded_size = encoded_left_border.size()
-            noise = torch.rand(encoded_size[0], 4, encoded_size[2], encoded_size[3]).to(device)
-            generated_spectrograms = generator(torch.cat((encoded_left_border, encoded_right_border, noise), 1))
+				optim_g.zero_grad()
 
-            fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
-            gen_loss = 0
+				encoded_left_border = left_border_encoder(fake_left_borders)
+				encoded_right_border = right_border_encoder(fake_right_borders)
+				encoded_size = encoded_left_border.size()
+				noise = torch.rand(encoded_size[0], 4, encoded_size[2], encoded_size[3]).to(device)
+				generated_spectrograms = generator(torch.cat((encoded_left_border, encoded_right_border, noise), 1))
 
-            for index, discriminator in enumerate(discriminators):
-                scale = 2 ** index
-                time_axis = args['spectrogram_shape'][2]
-                start = int((time_axis - (time_axis // (2**(len(discriminators)-1))) * scale) / 2)
-                end = time_axis - start
-                x_fake = fake_spectrograms[:, :, :, start:end:scale]
+				fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
+				gen_loss = 0
 
-                d_loss_f = discriminator(x_fake)
+				for index, discriminator in enumerate(discriminators):
+					scale = 2 ** index
+					time_axis = args['spectrogram_shape'][2]
+					start = int((time_axis - (time_axis // (2**(len(discriminators)-1))) * scale) / 2)
+					end = time_axis - start
+					x_fake = fake_spectrograms[:, :, :, start:end:scale]
 
-                gen_loss += torch.mean(torch.pow(d_loss_f - 1.0, 2))
+					d_loss_f = discriminator(x_fake)
 
-            gen_loss.backward()
-            optim_g.step()
+					gen_loss += torch.mean(torch.pow(d_loss_f - 1.0, 2))
 
-            if batch_idx % args['log_interval'] == 0:
-                current_time = time.time()
+				gen_loss.backward()
+				optim_g.step()
 
-                print(" * Epoch: [{:2d}] [{:4d}/{:4d} ({:.0f}%)] "
-                      "Counter:{:2d}\t"
-                      "({:4.1f} min\t"
-                      "{:4.3f} examples/sec\t"
-                      "{:4.2f} sec/batch)\n"
-                      "   Disc batch loss:{:.8f}\t"
-                      "   Gen batch loss:{:.8f}\t".format(
-                    int(epoch),
-                    int(batch_idx*len(data)),
-                    int(len(train_loader.dataset)/len(data)), 100. * batch_idx / len(train_loader), int(batch_idx),
-                    (current_time - start_time) / 60,
-                    args['log_interval'] * args['optimizer']['batch_size'] / (current_time - prev_iter_time),
-                    (current_time - prev_iter_time) / args['log_interval'],
-                    disc_loss.item(),
-                    gen_loss.item()))
-                prev_iter_time = current_time
-            if batch_idx % args['tensorboard_interval'] == 0:
-                summary_writer.add_scalar("Disc/Neg_Loss", -disc_loss, global_step=batch_idx)
-                summary_writer.add_scalar("Disc/Neg_Critic", d_loss_f.mean() - d_loss_r.mean(), global_step=batch_idx)
-                summary_writer.add_scalar("Disc/Loss_f", d_loss_f.mean(), global_step=batch_idx)
-                summary_writer.add_scalar("Disc/Loss_r", d_loss_r.mean(), global_step=batch_idx)
-                summary_writer.add_scalar("Gen/Loss", gen_loss, global_step=batch_idx)
-                real_c = consistency((real_spectrograms - 1) * 5)
-                fake_c = consistency((generated_spectrograms - 1) * 5)
+				if batch_idx % args['log_interval'] == 0:
+					current_time = time.time()
 
-                mean_R_Con, std_R_Con = real_c.mean(), real_c.std()
-                mean_F_Con, std_F_Con = fake_c.mean(), fake_c.std()
+					print(" * Epoch: [{:2d}] [{:4d}/{:4d} ({:.0f}%)] "
+						  "Counter:{:2d}\t"
+						  "({:4.1f} min\t"
+						  "{:4.3f} examples/sec\t"
+						  "{:4.2f} sec/batch)\n"
+						  "   Disc batch loss:{:.8f}\t"
+						  "   Gen batch loss:{:.8f}\t".format(
+						int(epoch),
+						int(batch_idx*len(data)),
+						int(len(train_loader.dataset)/len(data)), 100. * batch_idx / len(train_loader), int(batch_idx),
+						(current_time - start_time) / 60,
+						args['log_interval'] * args['optimizer']['batch_size'] / (current_time - prev_iter_time),
+						(current_time - prev_iter_time) / args['log_interval'],
+						disc_loss.item(),
+						gen_loss.item()))
+					prev_iter_time = current_time
+				if batch_idx % args['tensorboard_interval'] == 0:
+					summary_writer.add_scalar("Disc/Neg_Loss", -disc_loss, global_step=batch_idx)
+					summary_writer.add_scalar("Disc/Neg_Critic", d_loss_f.mean() - d_loss_r.mean(), global_step=batch_idx)
+					summary_writer.add_scalar("Disc/Loss_f", d_loss_f.mean(), global_step=batch_idx)
+					summary_writer.add_scalar("Disc/Loss_r", d_loss_r.mean(), global_step=batch_idx)
+					summary_writer.add_scalar("Gen/Loss", gen_loss, global_step=batch_idx)
+					real_c = consistency((real_spectrograms - 1) * 5)
+					fake_c = consistency((generated_spectrograms - 1) * 5)
 
-                summary_writer.add_scalar("Gen/Reg", torch.abs(mean_R_Con - mean_F_Con), global_step=batch_idx)
-                summary_writer.add_scalar("Gen/F_Con", mean_F_Con, global_step=batch_idx)
-                summary_writer.add_scalar("Gen/F_STD_Con", std_F_Con, global_step=batch_idx)
-                summary_writer.add_scalar("Gen/R_Con", mean_R_Con, global_step=batch_idx)
-                summary_writer.add_scalar("Gen/R_STD_Con", std_R_Con, global_step=batch_idx)
-                summary_writer.add_scalar("Gen/STD_diff", torch.abs(std_F_Con - std_R_Con), global_step=batch_idx)
+					mean_R_Con, std_R_Con = real_c.mean(), real_c.std()
+					mean_F_Con, std_F_Con = fake_c.mean(), fake_c.std()
 
-            for index in range(4):
-                summary_writer.add_image("images/Real_Image/" + str(index), colorize(real_spectrograms[index]), global_step=batch_idx)
-                summary_writer.add_image("images/Fake_Image/" + str(index), colorize(fake_spectrograms[index], -1, 1), global_step=batch_idx)
-            if batch_idx % args['save_interval'] == 0:
-                model_saver.saveModel(generator, discriminators, left_border_encoder, right_border_encoder, optim_g,
-                                      optims_d, batch_idx, epoch)
-       model_saver.saveModel(generator, discriminators, left_border_encoder, right_border_encoder, optim_g,
-                                      optims_d, batch_idx, epoch)
-       can_restart = True
-       return batch_idx, can_restart
-    except KeyboardInterrupt:
-        model_saver.saveModel(generator, discriminators, left_border_encoder, right_border_encoder, optim_g,
-                              optims_d, batch_idx, epoch)
-        should_restart = False
-        return batch_idx, should_restart
+					summary_writer.add_scalar("Gen/Reg", torch.abs(mean_R_Con - mean_F_Con), global_step=batch_idx)
+					summary_writer.add_scalar("Gen/F_Con", mean_F_Con, global_step=batch_idx)
+					summary_writer.add_scalar("Gen/F_STD_Con", std_F_Con, global_step=batch_idx)
+					summary_writer.add_scalar("Gen/R_Con", mean_R_Con, global_step=batch_idx)
+					summary_writer.add_scalar("Gen/R_STD_Con", std_R_Con, global_step=batch_idx)
+					summary_writer.add_scalar("Gen/STD_diff", torch.abs(std_F_Con - std_R_Con), global_step=batch_idx)
+
+				for index in range(4):
+					summary_writer.add_image("images/Real_Image/" + str(index), colorize(real_spectrograms[index]), global_step=batch_idx)
+					summary_writer.add_image("images/Fake_Image/" + str(index), colorize(fake_spectrograms[index], -1, 1), global_step=batch_idx)
+				if batch_idx % args['save_interval'] == 0:
+					model_saver.saveModel(generator, discriminators, left_border_encoder, right_border_encoder, optim_g,
+										  optims_d, batch_idx, epoch)
+		   model_saver.saveModel(generator, discriminators, left_border_encoder, right_border_encoder, optim_g,
+										  optims_d, batch_idx, epoch)
+		   can_restart = True
+		   return batch_idx, can_restart
+		except KeyboardInterrupt:
+			model_saver.saveModel(generator, discriminators, left_border_encoder, right_border_encoder, optim_g,
+								  optims_d, batch_idx, epoch)
+			should_restart = False
+			return batch_idx, should_restart
 
