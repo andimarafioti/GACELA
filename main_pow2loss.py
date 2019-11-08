@@ -108,6 +108,7 @@ args['discriminator_in_shape'] = [1, 256, 128]
 args['generator_input'] = 2*6*4*2*8+24*4
 args['optimizer'] = params_optimization
 args['split'] = signal_split
+args['border_scale'] = 1
 args['log_interval'] = 50
 args['spectrogram_shape'] = params['net']['shape']
 args['gamma_gp'] = params['net']['gamma_gp']

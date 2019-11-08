@@ -59,8 +59,8 @@ def train(args, device, train_loader, epoch, summary_writer, batch_idx=0):
             data = data.to(device).float()
             data = data.view(args['optimizer']['batch_size'], *args['spectrogram_shape'])
             real_spectrograms = data[::2]
-            fake_left_borders = data[1::2, :, :, :args['split'][0]]
-            fake_right_borders = data[1::2, :, :, args['split'][0] + args['split'][1]:]
+            fake_left_borders = data[1::2, :, :, :args['split'][0]:args['border_scale']]
+            fake_right_borders = data[1::2, :, :, args['split'][0] + args['split'][1]::args['border_scale']]
 
             # optimize D
             for _ in range(args['optimizer']['n_critic']):
