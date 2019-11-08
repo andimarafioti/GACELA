@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from torch.utils.tensorboard import SummaryWriter
 
 from model.borderEncoder import BorderEncoder
 from model.discriminatorpow2loss import Discriminator
@@ -37,7 +38,9 @@ class GANSystem(object):
 
 		self.model_saver = TorchModelSaver(args['experiment_name'], args['save_path'])
 
-	def train(self, train_loader, epoch, summary_writer, batch_idx=0):
+	def train(self, train_loader, epoch, batch_idx=0):
+		self.summary_writer = SummaryWriter(self.args['save_path'] + self.args['experiment_name'] + '_summary')
+
 		device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 		if batch_idx == 0 and epoch == 0:
@@ -132,31 +135,37 @@ class GANSystem(object):
 						gen_loss.item()))
 					prev_iter_time = current_time
 				if batch_idx % self.args['tensorboard_interval'] == 0:
-					summary_writer.add_scalar("Disc/Neg_Loss", -disc_loss, global_step=batch_idx)
-					summary_writer.add_scalar("Disc/Neg_Critic", d_loss_f.mean() - d_loss_r.mean(), global_step=batch_idx)
-					summary_writer.add_scalar("Disc/Loss_f", d_loss_f.mean(), global_step=batch_idx)
-					summary_writer.add_scalar("Disc/Loss_r", d_loss_r.mean(), global_step=batch_idx)
-					summary_writer.add_scalar("Gen/Loss", gen_loss, global_step=batch_idx)
-					real_c = consistency((real_spectrograms - 1) * 5)
-					fake_c = consistency((generated_spectrograms - 1) * 5)
-
-					mean_R_Con, std_R_Con = real_c.mean(), real_c.std()
-					mean_F_Con, std_F_Con = fake_c.mean(), fake_c.std()
-
-					summary_writer.add_scalar("Gen/Reg", torch.abs(mean_R_Con - mean_F_Con), global_step=batch_idx)
-					summary_writer.add_scalar("Gen/F_Con", mean_F_Con, global_step=batch_idx)
-					summary_writer.add_scalar("Gen/F_STD_Con", std_F_Con, global_step=batch_idx)
-					summary_writer.add_scalar("Gen/R_Con", mean_R_Con, global_step=batch_idx)
-					summary_writer.add_scalar("Gen/R_STD_Con", std_R_Con, global_step=batch_idx)
-					summary_writer.add_scalar("Gen/STD_diff", torch.abs(std_F_Con - std_R_Con), global_step=batch_idx)
-
-					for index in range(4):
-						summary_writer.add_image("images/Real_Image/" + str(index), colorize(real_spectrograms[index]), global_step=batch_idx)
-						summary_writer.add_image("images/Fake_Image/" + str(index), colorize(fake_spectrograms[index], -1, 1), global_step=batch_idx)
+					self.tensorboardSummarize()
 				if batch_idx % self.args['save_interval'] == 0:
 					self.model_saver.saveModel(self, batch_idx, epoch)
 		except KeyboardInterrupt:
 			should_restart = False
 		self.model_saver.saveModel(self, batch_idx, epoch)
 		return batch_idx, should_restart
+
+	def tensorboardSummarize(self):
+		self.summary_writer.add_scalar("Disc/Neg_Loss", -disc_loss, global_step=batch_idx)
+		self.summary_writer.add_scalar("Disc/Neg_Critic", d_loss_f.mean() - d_loss_r.mean(), global_step=batch_idx)
+		self.summary_writer.add_scalar("Disc/Loss_f", d_loss_f.mean(), global_step=batch_idx)
+		self.summary_writer.add_scalar("Disc/Loss_r", d_loss_r.mean(), global_step=batch_idx)
+		self.summary_writer.add_scalar("Gen/Loss", gen_loss, global_step=batch_idx)
+		real_c = consistency((real_spectrograms - 1) * 5)
+		fake_c = consistency((generated_spectrograms - 1) * 5)
+
+		mean_R_Con, std_R_Con = real_c.mean(), real_c.std()
+		mean_F_Con, std_F_Con = fake_c.mean(), fake_c.std()
+
+		self.summary_writer.add_scalar("Gen/Reg", torch.abs(mean_R_Con - mean_F_Con), global_step=batch_idx)
+		self.summary_writer.add_scalar("Gen/F_Con", mean_F_Con, global_step=batch_idx)
+		self.summary_writer.add_scalar("Gen/F_STD_Con", std_F_Con, global_step=batch_idx)
+		self.summary_writer.add_scalar("Gen/R_Con", mean_R_Con, global_step=batch_idx)
+		self.summary_writer.add_scalar("Gen/R_STD_Con", std_R_Con, global_step=batch_idx)
+		self.summary_writer.add_scalar("Gen/STD_diff", torch.abs(std_F_Con - std_R_Con), global_step=batch_idx)
+
+		for index in range(4):
+			self.summary_writer.add_image("images/Real_Image/" + str(index), colorize(real_spectrograms[index]),
+									 global_step=batch_idx)
+			self.summary_writer.add_image("images/Fake_Image/" + str(index), colorize(fake_spectrograms[index], -1, 1),
+									 global_step=batch_idx)
+
 

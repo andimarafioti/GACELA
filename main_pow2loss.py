@@ -1,6 +1,5 @@
 import torch
 torch.cuda.init()
-from torch.utils.tensorboard import SummaryWriter
 
 from data.trainDataset import TrainDataset
 from ganSystem import GANSystem
@@ -125,12 +124,11 @@ trainDataset = TrainDataset("../data/Maestro_spectrograms_mep/", window_size=512
 train_loader = torch.utils.data.DataLoader(trainDataset,
     batch_size=args['optimizer']['batch_size']//examples_per_file, shuffle=True,
                                            num_workers=4, drop_last=True)
-summary_writer = SummaryWriter(args['save_path'] + args['experiment_name'] + '_summary')
 start_at_step = 0
 start_at_epoch = 0
 
 ganSystem = GANSystem(args)
 for epoch in range(start_at_epoch, 10):
-    start_at_step, can_restart = ganSystem.train(train_loader, epoch, summary_writer, start_at_step)
+    start_at_step, can_restart = ganSystem.train(train_loader, epoch, start_at_step)
     if not can_restart:
         break
