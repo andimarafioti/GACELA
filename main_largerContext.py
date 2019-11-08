@@ -113,7 +113,7 @@ args['save_interval'] = 1000
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 examples_per_file = 16
-trainDataset = TrainDataset("data/", window_size=1024, examples_per_file=examples_per_file)
+trainDataset = TrainDataset("../data/Maestro_spectrograms_mep/", window_size=1024, examples_per_file=examples_per_file)
 
 train_loader = torch.utils.data.DataLoader(trainDataset,
     batch_size=args['optimizer']['batch_size']//examples_per_file, shuffle=True,
