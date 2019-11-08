@@ -136,28 +136,27 @@ def train(args, device, train_loader, epoch, summary_writer, batch_idx=0):
                     gen_loss.item()))
                 prev_iter_time = current_time
             if batch_idx % args['tensorboard_interval'] == 0:
-                if batch_idx % args['tensorboard_interval'] == 0:
-                    summary_writer.add_scalar("Disc/Neg_Loss", -disc_loss, global_step=batch_idx)
-                    summary_writer.add_scalar("Disc/Neg_Critic", d_loss_f.mean() - d_loss_r.mean(), global_step=batch_idx)
-                    summary_writer.add_scalar("Disc/Loss_f", d_loss_f.mean(), global_step=batch_idx)
-                    summary_writer.add_scalar("Disc/Loss_r", d_loss_r.mean(), global_step=batch_idx)
-                    summary_writer.add_scalar("Gen/Loss", gen_loss, global_step=batch_idx)
-                    real_c = consistency((real_spectrograms - 1) * 5)
-                    fake_c = consistency((generated_spectrograms - 1) * 5)
+                summary_writer.add_scalar("Disc/Neg_Loss", -disc_loss, global_step=batch_idx)
+                summary_writer.add_scalar("Disc/Neg_Critic", d_loss_f.mean() - d_loss_r.mean(), global_step=batch_idx)
+                summary_writer.add_scalar("Disc/Loss_f", d_loss_f.mean(), global_step=batch_idx)
+                summary_writer.add_scalar("Disc/Loss_r", d_loss_r.mean(), global_step=batch_idx)
+                summary_writer.add_scalar("Gen/Loss", gen_loss, global_step=batch_idx)
+                real_c = consistency((real_spectrograms - 1) * 5)
+                fake_c = consistency((generated_spectrograms - 1) * 5)
 
-                    mean_R_Con, std_R_Con = real_c.mean(), real_c.std()
-                    mean_F_Con, std_F_Con = fake_c.mean(), fake_c.std()
+                mean_R_Con, std_R_Con = real_c.mean(), real_c.std()
+                mean_F_Con, std_F_Con = fake_c.mean(), fake_c.std()
 
-                    summary_writer.add_scalar("Gen/Reg", torch.abs(mean_R_Con - mean_F_Con), global_step=batch_idx)
-                    summary_writer.add_scalar("Gen/F_Con", mean_F_Con, global_step=batch_idx)
-                    summary_writer.add_scalar("Gen/F_STD_Con", std_F_Con, global_step=batch_idx)
-                    summary_writer.add_scalar("Gen/R_Con", mean_R_Con, global_step=batch_idx)
-                    summary_writer.add_scalar("Gen/R_STD_Con", std_R_Con, global_step=batch_idx)
-                    summary_writer.add_scalar("Gen/STD_diff", torch.abs(std_F_Con - std_R_Con), global_step=batch_idx)
+                summary_writer.add_scalar("Gen/Reg", torch.abs(mean_R_Con - mean_F_Con), global_step=batch_idx)
+                summary_writer.add_scalar("Gen/F_Con", mean_F_Con, global_step=batch_idx)
+                summary_writer.add_scalar("Gen/F_STD_Con", std_F_Con, global_step=batch_idx)
+                summary_writer.add_scalar("Gen/R_Con", mean_R_Con, global_step=batch_idx)
+                summary_writer.add_scalar("Gen/R_STD_Con", std_R_Con, global_step=batch_idx)
+                summary_writer.add_scalar("Gen/STD_diff", torch.abs(std_F_Con - std_R_Con), global_step=batch_idx)
 
-                for index in range(4):
-                    summary_writer.add_image("images/Real_Image/" + str(index), colorize(real_spectrograms[index]), global_step=batch_idx)
-                    summary_writer.add_image("images/Fake_Image/" + str(index), colorize(fake_spectrograms[index], -1, 1), global_step=batch_idx)
+            for index in range(4):
+                summary_writer.add_image("images/Real_Image/" + str(index), colorize(real_spectrograms[index]), global_step=batch_idx)
+                summary_writer.add_image("images/Fake_Image/" + str(index), colorize(fake_spectrograms[index], -1, 1), global_step=batch_idx)
             if batch_idx % args['save_interval'] == 0:
                 model_saver.saveModel(generator, discriminators, left_border_encoder, right_border_encoder, optim_g,
                                       optims_d, batch_idx, epoch)
