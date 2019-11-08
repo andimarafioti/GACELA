@@ -52,6 +52,7 @@ class GANSystem(object):
 		try:
 			should_restart = True
 			for batch_idx, data in enumerate(train_loader, batch_idx):
+				print(batch_idx)
 				data = data.to(device).float()
 				data = data.view(self.args['optimizer']['batch_size'], *self.args['spectrogram_shape'])
 				real_spectrograms = data[::2]
@@ -70,7 +71,7 @@ class GANSystem(object):
 
 						fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
 						scale = 2 ** index
-						time_axis = args['spectrogram_shape'][2]
+						time_axis = self.args['spectrogram_shape'][2]
 						start = int((time_axis - (time_axis // (2**(len(self.discriminators)-1))) * scale) / 2)
 						end = time_axis - start
 						x_fake = fake_spectrograms[:, :, :, start:end:scale].detach()

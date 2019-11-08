@@ -1,8 +1,9 @@
 import torch
+torch.cuda.init()
 from torch.utils.tensorboard import SummaryWriter
 
 from data.trainDataset import TrainDataset
-from trainer_pow2loss import train
+from ganSystem import GANSystem
 import logging
 
 # logging.getLogger().setLevel(logging.DEBUG)  # set root logger to debug
@@ -48,8 +49,7 @@ params_generator['borders']['nfilter'] = [md, 2*md, md, md/2]
 params_generator['borders']['shape'] = [[5, 5],[5, 5],[5, 5],[5, 5]]
 params_generator['borders']['stride'] = [2, 2, 3, 4]
 params_generator['borders']['data_size'] = 2
-# This does not work because of flipping, border 2 need to be flipped tf.reverse(l, axis=[1]), ask Nathanael
-params_generator['borders']['width_full'] = None
+params_generator['borders']['border_scale'] = 1
 
 
 # Optimization parameters inspired from 'Self-Attention Generative Adversarial Networks'
@@ -108,7 +108,6 @@ args['discriminator_in_shape'] = [1, 256, 128]
 args['generator_input'] = 2*6*4*2*8+24*4
 args['optimizer'] = params_optimization
 args['split'] = signal_split
-args['border_scale'] = 1
 args['log_interval'] = 50
 args['spectrogram_shape'] = params['net']['shape']
 args['gamma_gp'] = params['net']['gamma_gp']
@@ -126,12 +125,12 @@ trainDataset = TrainDataset("../data/Maestro_spectrograms_mep/", window_size=512
 train_loader = torch.utils.data.DataLoader(trainDataset,
     batch_size=args['optimizer']['batch_size']//examples_per_file, shuffle=True,
                                            num_workers=4, drop_last=True)
-
 summary_writer = SummaryWriter(args['save_path'] + args['experiment_name'] + '_summary')
 start_at_step = 0
 start_at_epoch = 0
 
+ganSystem = GANSystem(args)
 for epoch in range(start_at_epoch, 10):
-    start_at_step, can_restart = train(args, device, train_loader, epoch, summary_writer, start_at_step)
+    start_at_step, can_restart = ganSystem.train(train_loader, epoch, summary_writer, start_at_step)
     if not can_restart:
         break
