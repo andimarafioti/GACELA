@@ -1,14 +1,12 @@
 import torch
 from torch import nn
-from torch.utils.tensorboard import SummaryWriter
 
 from model.borderEncoder import BorderEncoder
 from model.discriminatorpow2loss import Discriminator
 from model.generator import Generator
 
 import time
-from utils.colorize import colorize
-from utils.consistencyComputer import consistency
+from utils.tensorboardSummarizer import TensorboardSummarizer
 from utils.torchModelSaver import TorchModelSaver
 
 __author__ = 'Andres'
@@ -29,17 +27,18 @@ class GANSystem(object):
 		self.generator = Generator(args['generator'], args['generator_input']).to(device)
 
 		self.optim_g = torch.optim.Adam(list(self.generator.parameters()) + list(self.left_border_encoder.parameters()) +
-								   list(self.right_border_encoder.parameters()),
-								   lr=args['optimizer']['generator']['learning_rate'],
-								   betas=(0.5, 0.9))
+								list(self.right_border_encoder.parameters()),
+								lr=args['optimizer']['generator']['learning_rate'],
+								betas=(0.5, 0.9))
 		self.optims_d = [torch.optim.Adam(discriminator.parameters(),
-									 lr=args['optimizer']['discriminator']['learning_rate'],
-									 betas=(0.5, 0.9)) for discriminator in self.discriminators]
+								lr=args['optimizer']['discriminator']['learning_rate'],
+								betas=(0.5, 0.9)) for discriminator in self.discriminators]
 
 		self.model_saver = TorchModelSaver(args['experiment_name'], args['save_path'])
 
 	def train(self, train_loader, epoch, batch_idx=0):
-		self.summary_writer = SummaryWriter(self.args['save_path'] + self.args['experiment_name'] + '_summary')
+		self.summarizer = TensorboardSummarizer(self.args['save_path'] + self.args['experiment_name'] + '_summary',
+												self.args['tensorboard_interval'])
 
 		device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -55,7 +54,6 @@ class GANSystem(object):
 		try:
 			should_restart = True
 			for batch_idx, data in enumerate(train_loader, batch_idx):
-				print(batch_idx)
 				data = data.to(device).float()
 				data = data.view(self.args['optimizer']['batch_size'], *self.args['spectrogram_shape'])
 				real_spectrograms = data[::2]
@@ -85,6 +83,11 @@ class GANSystem(object):
 
 						disc_loss = torch.mean(torch.pow(d_loss_r - 1.0, 2)) + torch.mean(torch.pow(d_loss_f, 2))
 
+						self.summarizer.trackScalar("Disc{:1d}/Neg_Loss".format(int(index)), -disc_loss)
+						self.summarizer.trackScalar("Disc{:1d}/Neg_Critic".format(int(index)), d_loss_f.mean() - d_loss_r.mean())
+						self.summarizer.trackScalar("Disc{:1d}/Loss_f".format(int(index)), d_loss_f.mean())
+						self.summarizer.trackScalar("Disc{:1d}/Loss_r".format(int(index)), d_loss_r.mean())
+
 						disc_loss.backward()
 						optim_d.step()
 
@@ -112,6 +115,8 @@ class GANSystem(object):
 
 					gen_loss += torch.mean(torch.pow(d_loss_f - 1.0, 2))
 
+				self.summarizer.trackScalar("Gen/Loss", gen_loss)
+
 				gen_loss.backward()
 				self.optim_g.step()
 
@@ -135,37 +140,11 @@ class GANSystem(object):
 						gen_loss.item()))
 					prev_iter_time = current_time
 				if batch_idx % self.args['tensorboard_interval'] == 0:
-					self.tensorboardSummarize()
+					self.summarizer.writeSummary(batch_idx, real_spectrograms, generated_spectrograms, fake_spectrograms)
 				if batch_idx % self.args['save_interval'] == 0:
 					self.model_saver.saveModel(self, batch_idx, epoch)
 		except KeyboardInterrupt:
 			should_restart = False
 		self.model_saver.saveModel(self, batch_idx, epoch)
 		return batch_idx, should_restart
-
-	def tensorboardSummarize(self):
-		self.summary_writer.add_scalar("Disc/Neg_Loss", -disc_loss, global_step=batch_idx)
-		self.summary_writer.add_scalar("Disc/Neg_Critic", d_loss_f.mean() - d_loss_r.mean(), global_step=batch_idx)
-		self.summary_writer.add_scalar("Disc/Loss_f", d_loss_f.mean(), global_step=batch_idx)
-		self.summary_writer.add_scalar("Disc/Loss_r", d_loss_r.mean(), global_step=batch_idx)
-		self.summary_writer.add_scalar("Gen/Loss", gen_loss, global_step=batch_idx)
-		real_c = consistency((real_spectrograms - 1) * 5)
-		fake_c = consistency((generated_spectrograms - 1) * 5)
-
-		mean_R_Con, std_R_Con = real_c.mean(), real_c.std()
-		mean_F_Con, std_F_Con = fake_c.mean(), fake_c.std()
-
-		self.summary_writer.add_scalar("Gen/Reg", torch.abs(mean_R_Con - mean_F_Con), global_step=batch_idx)
-		self.summary_writer.add_scalar("Gen/F_Con", mean_F_Con, global_step=batch_idx)
-		self.summary_writer.add_scalar("Gen/F_STD_Con", std_F_Con, global_step=batch_idx)
-		self.summary_writer.add_scalar("Gen/R_Con", mean_R_Con, global_step=batch_idx)
-		self.summary_writer.add_scalar("Gen/R_STD_Con", std_R_Con, global_step=batch_idx)
-		self.summary_writer.add_scalar("Gen/STD_diff", torch.abs(std_F_Con - std_R_Con), global_step=batch_idx)
-
-		for index in range(4):
-			self.summary_writer.add_image("images/Real_Image/" + str(index), colorize(real_spectrograms[index]),
-									 global_step=batch_idx)
-			self.summary_writer.add_image("images/Fake_Image/" + str(index), colorize(fake_spectrograms[index], -1, 1),
-									 global_step=batch_idx)
-
 
