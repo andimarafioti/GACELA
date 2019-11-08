@@ -15,9 +15,9 @@ class BorderEncoder(nn.Module):
 
         for nfilters, kernel_shape, stride in zip(self._params['nfilter'], self._params['shape'], self._params['stride']):
             self.encoder.append(nn.Sequential(
-                nn.Conv2d(in_channels=curr_channel_count, out_channels=int(nfilters),
+                nn.utils.weight_norm(nn.Conv2d(in_channels=curr_channel_count, out_channels=int(nfilters),
                                                kernel_size=kernel_shape, stride=stride,
-                                               padding=2),
+                                               padding=2)),
                 nn.ReLU(),
             ))
             curr_channel_count = int(nfilters)
