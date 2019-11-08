@@ -4,8 +4,8 @@ from torch import nn
 from model.borderEncoder import BorderEncoder
 from model.discriminatorpow2loss import Discriminator
 from model.generator import Generator
+from utils.consoleSummarizer import ConsoleSummarizer
 
-import time
 from utils.tensorboardSummarizer import TensorboardSummarizer
 from utils.torchModelSaver import TorchModelSaver
 
@@ -40,6 +40,9 @@ class GANSystem(object):
 		self.summarizer = TensorboardSummarizer(self.args['save_path'] + self.args['experiment_name'] + '_summary',
 												self.args['tensorboard_interval'])
 
+		self.consoleSummarizer = ConsoleSummarizer(self.args['log_interval'], self.args['optimizer']['batch_size'],
+												   len(train_loader))
+
 		device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 		if batch_idx == 0 and epoch == 0:
@@ -48,8 +51,6 @@ class GANSystem(object):
 			self.model_saver.loadModel(self, batch_idx, epoch-1)  # test that this works
 
 		print('try')
-		start_time = time.time()
-		prev_iter_time = start_time
 
 		try:
 			should_restart = True
@@ -121,24 +122,7 @@ class GANSystem(object):
 				self.optim_g.step()
 
 				if batch_idx % self.args['log_interval'] == 0:
-					current_time = time.time()
-
-					print(" * Epoch: [{:2d}] [{:4d}/{:4d} ({:.0f}%)] "
-						  "Counter:{:2d}\t"
-						  "({:4.1f} min\t"
-						  "{:4.3f} examples/sec\t"
-						  "{:4.2f} sec/batch)\n"
-						  "   Disc batch loss:{:.8f}\t"
-						  "   Gen batch loss:{:.8f}\t".format(
-						int(epoch),
-						int(batch_idx*len(data)),
-						int(len(train_loader.dataset)/len(data)), 100. * batch_idx / len(train_loader), int(batch_idx),
-						(current_time - start_time) / 60,
-						self.args['log_interval'] * self.args['optimizer']['batch_size'] / (current_time - prev_iter_time),
-						(current_time - prev_iter_time) / self.args['log_interval'],
-						disc_loss.item(),
-						gen_loss.item()))
-					prev_iter_time = current_time
+					self.consoleSummarizer.printSummary(batch_idx, epoch)
 				if batch_idx % self.args['tensorboard_interval'] == 0:
 					self.summarizer.writeSummary(batch_idx, real_spectrograms, generated_spectrograms, fake_spectrograms)
 				if batch_idx % self.args['save_interval'] == 0:
