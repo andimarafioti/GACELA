@@ -50,6 +50,7 @@ class GANSystem(object):
 		prev_iter_time = start_time
 
 		try:
+			should_restart = True
 			for batch_idx, data in enumerate(train_loader, batch_idx):
 				data = data.to(device).float()
 				data = data.view(self.args['optimizer']['batch_size'], *self.args['spectrogram_shape'])
@@ -85,21 +86,21 @@ class GANSystem(object):
 
 				# optimize G
 
-				optim_g.zero_grad()
+				self.optim_g.zero_grad()
 
-				encoded_left_border = left_border_encoder(fake_left_borders)
-				encoded_right_border = right_border_encoder(fake_right_borders)
+				encoded_left_border = self.left_border_encoder(fake_left_borders)
+				encoded_right_border = self.right_border_encoder(fake_right_borders)
 				encoded_size = encoded_left_border.size()
 				noise = torch.rand(encoded_size[0], 4, encoded_size[2], encoded_size[3]).to(device)
-				generated_spectrograms = generator(torch.cat((encoded_left_border, encoded_right_border, noise), 1))
+				generated_spectrograms = self.generator(torch.cat((encoded_left_border, encoded_right_border, noise), 1))
 
 				fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
 				gen_loss = 0
 
-				for index, discriminator in enumerate(discriminators):
+				for index, discriminator in enumerate(self.discriminators):
 					scale = 2 ** index
-					time_axis = args['spectrogram_shape'][2]
-					start = int((time_axis - (time_axis // (2**(len(discriminators)-1))) * scale) / 2)
+					time_axis = self.args['spectrogram_shape'][2]
+					start = int((time_axis - (time_axis // (2**(len(self.discriminators)-1))) * scale) / 2)
 					end = time_axis - start
 					x_fake = fake_spectrograms[:, :, :, start:end:scale]
 
@@ -108,9 +109,9 @@ class GANSystem(object):
 					gen_loss += torch.mean(torch.pow(d_loss_f - 1.0, 2))
 
 				gen_loss.backward()
-				optim_g.step()
+				self.optim_g.step()
 
-				if batch_idx % args['log_interval'] == 0:
+				if batch_idx % self.args['log_interval'] == 0:
 					current_time = time.time()
 
 					print(" * Epoch: [{:2d}] [{:4d}/{:4d} ({:.0f}%)] "
@@ -124,12 +125,12 @@ class GANSystem(object):
 						int(batch_idx*len(data)),
 						int(len(train_loader.dataset)/len(data)), 100. * batch_idx / len(train_loader), int(batch_idx),
 						(current_time - start_time) / 60,
-						args['log_interval'] * args['optimizer']['batch_size'] / (current_time - prev_iter_time),
-						(current_time - prev_iter_time) / args['log_interval'],
+						self.args['log_interval'] * self.args['optimizer']['batch_size'] / (current_time - prev_iter_time),
+						(current_time - prev_iter_time) / self.args['log_interval'],
 						disc_loss.item(),
 						gen_loss.item()))
 					prev_iter_time = current_time
-				if batch_idx % args['tensorboard_interval'] == 0:
+				if batch_idx % self.args['tensorboard_interval'] == 0:
 					summary_writer.add_scalar("Disc/Neg_Loss", -disc_loss, global_step=batch_idx)
 					summary_writer.add_scalar("Disc/Neg_Critic", d_loss_f.mean() - d_loss_r.mean(), global_step=batch_idx)
 					summary_writer.add_scalar("Disc/Loss_f", d_loss_f.mean(), global_step=batch_idx)
@@ -151,16 +152,10 @@ class GANSystem(object):
 				for index in range(4):
 					summary_writer.add_image("images/Real_Image/" + str(index), colorize(real_spectrograms[index]), global_step=batch_idx)
 					summary_writer.add_image("images/Fake_Image/" + str(index), colorize(fake_spectrograms[index], -1, 1), global_step=batch_idx)
-				if batch_idx % args['save_interval'] == 0:
-					model_saver.saveModel(generator, discriminators, left_border_encoder, right_border_encoder, optim_g,
-										  optims_d, batch_idx, epoch)
-		   model_saver.saveModel(generator, discriminators, left_border_encoder, right_border_encoder, optim_g,
-										  optims_d, batch_idx, epoch)
-		   can_restart = True
-		   return batch_idx, can_restart
+				if batch_idx % self.args['save_interval'] == 0:
+					self.model_saver.saveModel(self, batch_idx, epoch)
 		except KeyboardInterrupt:
-			model_saver.saveModel(generator, discriminators, left_border_encoder, right_border_encoder, optim_g,
-								  optims_d, batch_idx, epoch)
 			should_restart = False
-			return batch_idx, should_restart
+		self.model_saver.saveModel(self, batch_idx, epoch)
+		return batch_idx, should_restart
 
