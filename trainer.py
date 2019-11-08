@@ -78,7 +78,7 @@ def train(args, device, train_loader, epoch, summary_writer, batch_idx=0):
                     fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
                     scale = 2 ** index
                     time_axis = args['spectrogram_shape'][2]
-                    start = int((time_axis - (time_axis // 4) * scale) / 2)
+                    start = int((time_axis - (time_axis // len(discriminators)) * scale) / 2)
                     end = time_axis - start
                     x_fake = fake_spectrograms[:, :, :, start:end:scale].detach()
                     x_real = real_spectrograms[:, :, :, start:end:scale].detach()
@@ -110,7 +110,7 @@ def train(args, device, train_loader, epoch, summary_writer, batch_idx=0):
             for index, discriminator in enumerate(discriminators):
                 scale = 2 ** index
                 time_axis = args['spectrogram_shape'][2]
-                start = int((time_axis - (time_axis // 4) * scale) / 2)
+                start = int((time_axis - (time_axis // len(discriminators)) * scale) / 2)
                 end = time_axis - start
                 x_fake = fake_spectrograms[:, :, :, start:end:scale]
                 d_loss_f += torch.mean(discriminator(x_fake))
