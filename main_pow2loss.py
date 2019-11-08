@@ -101,6 +101,7 @@ params['Nstats'] = 500
 
 args = dict()
 args['generator'] = params_generator
+args['discriminator_count'] = 3
 args['discriminator'] = params_discriminator
 args['borderEncoder'] = params_generator['borders']
 args['discriminator_in_shape'] = [1, 256, 128]

@@ -21,8 +21,8 @@ def init_weights(m):
 
 def train(args, device, train_loader, epoch, summary_writer, batch_idx=0):
     discriminators = nn.ModuleList(
-        [Discriminator(args['discriminator'], args['discriminator_in_shape']) for _ in range(3)]
-    ).to(device)
+        [Discriminator(args['discriminator'], args['discriminator_in_shape'])
+         for _ in range(args['discriminator_count'])]).to(device)
 
     left_border_encoder = BorderEncoder(args['borderEncoder']).to(device)
     right_border_encoder = BorderEncoder(args['borderEncoder']).to(device)
