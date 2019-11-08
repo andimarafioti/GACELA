@@ -59,8 +59,8 @@ def train(args, device, train_loader, epoch, summary_writer, batch_idx=0):
             data = data.to(device).float()
             data = data.view(args['optimizer']['batch_size'], *args['spectrogram_shape'])
             real_spectrograms = data[::2]
-            fake_left_borders = data[1::2, :, :, :args['split'][0]:args['border_scale']]
-            fake_right_borders = data[1::2, :, :, args['split'][0] + args['split'][1]::args['border_scale']]
+            fake_left_borders = data[1::2, :, :, :args['split'][0]]
+            fake_right_borders = data[1::2, :, :, args['split'][0] + args['split'][1]:]
 
             # optimize D
             for _ in range(args['optimizer']['n_critic']):
@@ -73,6 +73,7 @@ def train(args, device, train_loader, epoch, summary_writer, batch_idx=0):
                     generated_spectrograms = generator(torch.cat((encoded_left_border, encoded_right_border, noise), 1))
 
                     fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
+                    print(fake_spectrograms.shape)
                     scale = 2 ** index
                     time_axis = args['spectrogram_shape'][2]
                     start = int((time_axis - (time_axis // (2**(len(discriminators)-1))) * scale) / 2)

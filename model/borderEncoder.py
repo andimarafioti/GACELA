@@ -23,6 +23,7 @@ class BorderEncoder(nn.Module):
             curr_channel_count = int(nfilters)
 
     def forward(self, x):
+        x = x[:, :, :, ::self._params['border_scale']]
         for module in self.encoder:
             x = module(x)
         return x
