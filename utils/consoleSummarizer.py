@@ -21,8 +21,8 @@ class ConsoleSummarizer(object):
 			  "{:4.3f} examples/sec\t"
 			  "{:4.2f} sec/batch)\n".format(
 			int(epoch),
-			int(batch_idx * self._batch_size),
-			int(self._datasets_length / self._batch_size), 100. * batch_idx / self._datasets_length, int(batch_idx),
+			int(batch_idx),
+			int(self._datasets_length), 100. * batch_idx / self._datasets_length, int(batch_idx),
 														(current_time - self._start_time) / 60,
 														self._log_interval * self._batch_size /
 														(current_time - self._prev_iter_time),
