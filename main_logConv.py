@@ -21,7 +21,7 @@ __author__ = 'Andres'
 
 
 signal_split = [192, 128, 192]
-md = 32
+md = 16
 
 params_discriminator = dict()
 params_discriminator['stride'] = [2,2,2,2,2]
@@ -106,7 +106,7 @@ args['discriminator_count'] = 3
 args['discriminator'] = params_discriminator
 args['borderEncoder'] = params_generator['borders']
 args['discriminator_in_shape'] = [1, 256, 128]
-args['generator_input'] = 2*6*4*2*8+24*4
+args['generator_input'] = 2*6*4*2*4+24*4
 args['optimizer'] = params_optimization
 args['split'] = signal_split
 args['log_interval'] = 50
