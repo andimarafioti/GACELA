@@ -34,7 +34,6 @@ class DiscriminatorLogConv(nn.Module):
 
     def forward_conv(self, x):
         for module in self.conv_discriminator:
-            print(x.size())
             x = module(x)
         return x
 
