@@ -28,8 +28,10 @@ class LogConv(nn.Module):
         return xs
 
     def merge_sigs(self, x, ins, fins):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
         bs, ch, _, ts = x[0].shape
-        m = torch.zeros([bs, ch, torch.max(torch.tensor(fins)), ts])
+        m = torch.zeros([bs, ch, torch.max(torch.tensor(fins)), ts]).to(device)
         for d, i, j in zip(x, ins, fins):
             m[:, :, i:j, :] += d
         return m / 2
