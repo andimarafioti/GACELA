@@ -54,10 +54,9 @@ class LogConv(nn.Module):
         return ins, fins
 
     def forward(self, x):
-        splitted_sigs = self.split_sigs(x, self._ins, self._fins)
         results = []
-        for octave, signal in enumerate(splitted_sigs):
-            results.append(self.logconv["octave_%d" % octave](signal))
+        for octave, (ins, fins) in enumerate(zip(self._ins, self._fins)):
+            results.append(self.logconv["octave_%d" % octave](x[:, :, ins:fins, :]))
 
         return self.merge_sigs(results, self._ins, self._fins)
 
