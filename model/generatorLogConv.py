@@ -34,7 +34,7 @@ class GeneratorLogConv(nn.Module):
 
         self.convGenerator.append(nn.Sequential(
             LogConv(log_size=logSize, in_channels=curr_channel_count, out_channels=self._params['nfilter'][-1],
-                                           kernel_size=self._params['shape'][-1], stride=self._params['stride'][-1],
+                                           kernel_size=self._params['shape'][-1], stride=1/self._params['stride'][-1],
                                            padding=self._params['padding'][-1]),
             nn.Tanh(),
         ))
