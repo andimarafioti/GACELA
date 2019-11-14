@@ -114,7 +114,7 @@ args['spectrogram_shape'] = params['net']['shape']
 args['gamma_gp'] = params['net']['gamma_gp']
 args['tensorboard_interval'] = 250
 args['save_path'] = '../saved_results/'
-args['experiment_name'] = 'pytorch_nc1_pow2loss_2'
+args['experiment_name'] = 'pytorch_nc1_genLogConv'
 args['save_interval'] = 1000
 
 
