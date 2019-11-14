@@ -14,49 +14,51 @@ class LogConv(nn.Module):
         self._stride = stride
         self._padding = padding
 
-        self._ins, self._fins = self.ins_fins_for(self._log_size)
         self.logconv = nn.ModuleDict()
+        
+        ins, fins = self.get_split(self._log_size, stride)
 
-        for octave in range(len(self._ins)):
+        for octave in range(len(ins)):
             self.logconv["octave_%d" % octave] = nn.utils.weight_norm(nn.Conv2d(in_channels=in_channels, out_channels=out_channels,
-                                                   kernel_size=kernel_size, stride=stride, padding=padding))
+                                                   kernel_size=kernel_size, stride=stride))
 
-    def split_sigs(self, x, ins, fins):
+    def split_sigs(self, x, ins, fins, padding=0):
         xs = []
+        sig = nn.functional.pad(input=x, pad=(padding, padding, padding, padding), mode='constant', value=0)
+
         for i, j in zip(ins, fins):
-            xs.append(x[:, :, i:j, :])
+            xs.append(sig[:, :, i:j, :])
         return xs
 
     def merge_sigs(self, x, ins, fins):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-        bs, ch, _, ts = x[0].shape
-        m = torch.zeros([bs, ch, torch.max(torch.tensor(fins)), ts]).to(device)
-        for d, i, j in zip(x, ins, fins):
-            m[:, :, i:j, :] += d
-        return m / 2
-
-    def ins_fins_for(self, n=256):
+        bs, ch,_, ts = x[0].shape
+        m = torch.zeros([bs, ch, np.max(fins), ts]).to(device)
+        for d,i,j in zip(x, ins,fins):
+            m[:,:,i:j,:] += d
+        return m/2
+    
+    def get_split(self, n=256, stride=1, padding=0):
         n = torch.tensor(n).long()
+        m = torch.tensor(stride*4)
         ins = []
         fins = []
         ins.append(0)
         ins.append(0)
-        fins.append(3)
-        fins.append(6)
-
-        for i in range(2, int(torch.log2(n.float())) + 1):
-            iin = torch.tensor(2 ** i - 2 ** (i - 2))
-            l = torch.tensor(2 ** (i + 1) + 2 ** (i - 2))
+        fins.append(m+padding)
+        fins.append(2*m+padding)
+        for i in range(int(np.log2(n//m))):
+            iin = 2**(i)*m
+            l = 3*(2**i)*m
             ifin = iin + l
             ins.append(iin)
-            fins.append(torch.min(ifin, n))
+            fins.append(np.minimum(ifin, n)+padding)
         return ins, fins
-
+    
     def forward(self, x):
         results = []
-        for octave, (ins, fins) in enumerate(zip(self._ins, self._fins)):
-            results.append(self.logconv["octave_%d" % octave](x[:, :, ins:fins, :]))
+        sig = nn.functional.pad(input=x, pad=(self._padding, self._padding, self._padding, self._padding), mode='constant', value=0)
 
-        return self.merge_sigs(results, self._ins, self._fins)
-
+        for octave, (ins, fins) in enumerate(zip(*self.get_split(self._log_size, self._stride, self._padding*2))):
+            results.append(self.logconv["octave_%d" % octave](sig[:, :, ins:fins, :]))
+        return self.merge_sigs(results, *self.get_split(n=self._log_size//self._stride, stride=1))
