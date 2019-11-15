@@ -19,9 +19,8 @@ class DiscriminatorLogConv(nn.Module):
         for nfilters, kernel_shape, stride in zip(self._params['nfilter'], self._params['shape'], self._params['stride']):
             self.conv_discriminator.append(nn.Sequential(
                 LogConv(log_size, in_channels=curr_channel_count, out_channels=nfilters,
-                                               kernel_size=kernel_shape, stride=1,
+                                               kernel_size=kernel_shape, stride=stride,
                                                padding=2),
-                nn.MaxPool2d(stride),
                 nn.LeakyReLU(),
             ))
             log_size = log_size/stride
