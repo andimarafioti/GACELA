@@ -1,5 +1,6 @@
 import torch
 
+from data.audioLoader import AudioLoader
 from data.trainDataset import TrainDataset
 from ganSystem import GANSystem
 import logging
@@ -21,17 +22,18 @@ signal_split = [448, 128, 448]
 md = 32
 
 params_discriminator = dict()
-params_discriminator['stride'] = [2,2,2,2,2]
-params_discriminator['nfilter'] = [md, 2*md, 4*md, 8*md, 16*md]
+params_discriminator['stride'] = [1, 1, 2, 2, 1]
+params_discriminator['nfilter'] = [md, md, 2 * md, 4 * md, 1]
 params_discriminator['shape'] = [[5, 5], [5, 5], [5, 5], [5, 5], [5, 5]]
 params_discriminator['data_size'] = 2
 
 params_generator = dict()
-params_generator['stride'] = [2, 2, 2, 2, 2]
-params_generator['latent_dim'] = 100
-params_generator['nfilter'] = [8*md, 4*md, 2*md, md, 1]
-params_generator['shape'] = [[4, 4], [4, 4], [8, 8], [8, 8], [8, 8]]
-params_generator['padding'] = [[1, 1], [1, 1], [3, 3], [3, 3], [3, 3]]
+params_generator['stride'] = [1, 1, 1, 1, 1]
+params_generator['nfilter'] = [4 * md, 4 * md, 2 * md, md, 1]
+params_generator['shape'] = [5, 5, 7, 7, 7]
+params_generator['padding'] = [2, 2, 3, 3, 3]
+# params_generator['residual_blocks'] = 2
+
 params_generator['full'] = 256*md
 params_generator['summary'] = True
 params_generator['data_size'] = 2
@@ -108,11 +110,17 @@ args['save_path'] = '../saved_results/'
 args['experiment_name'] = 'pytorch_nc1_largerContext'
 args['save_interval'] = 1000
 
+args['fft_length'] = 1024
+args['fft_hop_size'] = 256
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 examples_per_file = 16
-trainDataset = TrainDataset("../data/Maestro_spectrograms_mep/", window_size=1024, examples_per_file=examples_per_file)
+audioLoader = AudioLoader(args['sampling_rate'], args['fft_length'], args['fft_hop_size'], 50)
+
+dataFolder = "../../../Datasets/maestro-v2.0.0/"
+
+trainDataset = TrainDataset(dataFolder, window_size=1024, audio_loader=audioLoader, examples_per_file=examples_per_file)
 
 train_loader = torch.utils.data.DataLoader(trainDataset,
     batch_size=args['optimizer']['batch_size']//examples_per_file, shuffle=True,
