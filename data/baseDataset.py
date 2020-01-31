@@ -9,7 +9,7 @@ __author__ = 'Andres'
 
 
 class BaseDataset(data.Dataset):
-    def __init__(self, root, window_size, examples_per_file=8, blacklist_patterns=None, loaded_files_buffer=10,
+    def __init__(self, root, window_size, audio_loader, examples_per_file=8, blacklist_patterns=None, loaded_files_buffer=10,
                  file_usages=10):
         assert (isinstance(root, str))
         if blacklist_patterns is None:
@@ -17,11 +17,12 @@ class BaseDataset(data.Dataset):
 
         self.root = root
         self._window_size = window_size
+        self._audio_loader = audio_loader
         self._loaded_files_buffer = loaded_files_buffer
         self._file_usages = file_usages
 
         self._index = 0
-        self.filenames = glob.glob(os.path.join(root, "*.dat"))
+        self.filenames = glob.glob(os.path.join(root, "*.wav"))
         for pattern in blacklist_patterns:
             self.filenames = self.blacklist(self.filenames, pattern)
 
@@ -40,9 +41,16 @@ class BaseDataset(data.Dataset):
 
     def _loadNewFile(self):
         name = self.filenames[self._index % len(self.filenames)]
-        spectrogram = np.memmap(name, mode='r', dtype=np.float64).reshape([257, -1])
-        self._loaded_files[name] = [0, spectrogram]
-        self._index += 1
+        audio = self._audio_loader.loadSound(name)
+        audio = self._sliceAudio(audio)
+        spectrogram = self._audio_loader.computeSpectrogram(audio)
+        if spectrogram.shape[1] <= self._window_size:
+            self._index += 1
+            return
+        self._saveNewFile(name, audio, spectrogram)
+
+    def _saveNewFile(self, name, audio, spectrogram):
+        raise NotImplementedError("Subclass responsibility")
 
     def _usedFilename(self, filename):
         self._loaded_files[filename][0] = self._loaded_files[filename][0] + 1
@@ -50,32 +58,22 @@ class BaseDataset(data.Dataset):
             del self._loaded_files[filename]
             Worker.call(self._loadNewFile).asDaemon.start()
 
-    def __len__(self):
-        return len(self.filenames) * 1000
-
-    def _sliceData(self, data):
-        raise NotImplementedError("Subclass responsibility")
-
-    def __getitem__(self, unused_index):
+    def _selectFile(self):
         loaded_files = list(self._loaded_files.keys())
-        if len(list(self._loaded_files.keys())) == 0:
+        while len(list(self._loaded_files.keys())) == 0:
             self._loadNewFile()
             Worker.call(self._populateLoadedFiles).asDaemon.start()
             loaded_files = list(self._loaded_files.keys())
 
-        filename = np.random.choice(loaded_files)
-        spectrogram = self._loaded_files[filename][1]
-        spectrogram = self._sliceData(spectrogram)
+        return np.random.choice(loaded_files)
 
-        starts = np.random.randint(0, spectrogram.shape[1] - self._window_size, self._examples_per_file)
+    def __len__(self):
+        return len(self.filenames) * 1000
 
-        spectrograms = np.zeros([self._examples_per_file, 256, self._window_size], dtype=np.float64)
+    def _sliceAudio(self, audio):
+        raise NotImplementedError("Subclass responsibility")
 
-        for index, start in enumerate(starts):
-            spectrograms[index] = spectrogram[:256, start:start + self._window_size]
-
-        self._usedFilename(filename)
-
-        return spectrograms
+    def __getitem__(self, unused_index):
+        raise NotImplementedError("Subclass responsibility")
 
 

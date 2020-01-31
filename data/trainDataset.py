@@ -1,11 +1,33 @@
+import numpy as np
+
 from data.baseDataset import BaseDataset
 
 __author__ = 'Andres'
 
 
 class TrainDataset(BaseDataset):
-    def _sliceData(self, data):
-        return data[:, :int(0.9*data.shape[1])]
+    def _saveNewFile(self, name, audio, spectrogram):
+        self._loaded_files[name] = [0, spectrogram]
+        self._index += 1
+
+    def _sliceAudio(self, audio):
+        return audio[:int(0.8*audio.shape[0])]
+
+    def __getitem__(self, unused_index):
+        filename = self._selectFile()
+        spectrogram = self._loaded_files[filename][1]
+
+        starts = np.random.randint(0, spectrogram.shape[1] - self._window_size, self._examples_per_file)
+
+        spectrograms = np.zeros([self._examples_per_file, self._audio_loader.windowLength()//2+1, self._window_size], dtype=np.float64)
+
+        for index, start in enumerate(starts):
+            spectrograms[index] = spectrogram[:, start:start + self._window_size]
+
+        self._usedFilename(filename)
+
+        return spectrograms[:, :-1]
+
 
 if __name__ == '__main__':
     import torch
