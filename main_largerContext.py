@@ -112,6 +112,7 @@ args['save_interval'] = 1000
 
 args['fft_length'] = 1024
 args['fft_hop_size'] = 256
+args['sampling_rate'] = 22050
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
