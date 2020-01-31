@@ -31,7 +31,7 @@ class AudioLoader(object):
 		audio = audio[:len(audio)-np.mod(len(audio), self._window_length)]
 		audio = audio[:len(audio)-np.mod(len(audio), self._hop_size)]
 
-		spectrogram, _ = self._anStft.spectrogram(audio)
+		spectrogram = self._anStft.spectrogram(audio)
 		logSpectrogram = log_spectrogram(spectrogram, dynamic_range_dB=self._dynamic_range_dB)
 
 		logSpectrogram = logSpectrogram / (-self._dynamic_range_dB / 2) + 1
