@@ -28,7 +28,7 @@ params_discriminator['shape'] = [[5, 5], [5, 5], [5, 5], [5, 5], [5, 5]]
 params_discriminator['data_size'] = 2
 
 params_generator = dict()
-params_generator['stride'] = [1, 1, 1, 1, 1]
+params_generator['stride'] = [2, 2, 2, 2, 2]
 params_generator['nfilter'] = [4 * md, 4 * md, 2 * md, md, 1]
 params_generator['shape'] = [5, 5, 7, 7, 7]
 params_generator['padding'] = [2, 2, 3, 3, 3]
