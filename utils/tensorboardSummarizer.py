@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
@@ -18,7 +19,7 @@ class TensorboardSummarizer(object):
 		else:
 			self._tracked_scalars[summaryName] = scalar.detach().data.mean()
 
-	def writeSummary(self, batch_idx, real_spectrograms, generated_spectrograms, fake_spectrograms):
+	def writeSummary(self, batch_idx, real_spectrograms, generated_spectrograms, fake_spectrograms, fake_sounds, real_sounds, sampling_rate):
 		for summaryName in self._tracked_scalars:
 			self._summary_writer.add_scalar(summaryName, self._tracked_scalars[summaryName]/self._writeInterval,
 											global_step=batch_idx)
@@ -42,4 +43,5 @@ class TensorboardSummarizer(object):
 									 global_step=batch_idx)
 			self._summary_writer.add_image("images/Fake_Image/" + str(index), colorize(fake_spectrograms[index], -1, 1),
 									 global_step=batch_idx)
-
+			self._summary_writer.add_audio('sounds/Gen/' + str(index), fake_sounds[index]/(np.abs(fake_sounds[index]).max()), global_step=batch_idx, sample_rate=sampling_rate)
+			self._summary_writer.add_audio('sounds/Real/' + str(index), real_sounds[index]/(np.abs(real_sounds[index]).max()), global_step=batch_idx, sample_rate=sampling_rate)

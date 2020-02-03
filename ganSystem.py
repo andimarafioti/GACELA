@@ -5,7 +5,10 @@ import torch.nn.functional as F
 from model.borderEncoder import BorderEncoder
 from model.discriminator import Discriminator
 from model.generator import Generator
+from stft4pghi.stft import GaussTruncTF
+from stft4pghi.transforms import inv_log_spectrogram
 from utils.consoleSummarizer import ConsoleSummarizer
+from utils.spectrogramInverter import SpectrogramInverter
 
 from utils.tensorboardSummarizer import TensorboardSummarizer
 from utils.torchModelSaver import TorchModelSaver
@@ -36,6 +39,7 @@ class GANSystem(object):
 								betas=(0.5, 0.9)) for discriminator in self.discriminators]
 
 		self.model_saver = TorchModelSaver(args['experiment_name'], args['save_path'])
+		self._spectrogramInverter = SpectrogramInverter(args['fft_length'], args['fft_hop_size'])
 
 	def train(self, train_loader, epoch, batch_idx=0):
 		self.summarizer = TensorboardSummarizer(self.args['save_path'] + self.args['experiment_name'] + '_summary',
@@ -126,7 +130,17 @@ class GANSystem(object):
 				if batch_idx % self.args['log_interval'] == 0:
 					self.consoleSummarizer.printSummary(batch_idx, epoch)
 				if batch_idx % self.args['tensorboard_interval'] == 0:
-					self.summarizer.writeSummary(batch_idx, real_spectrograms, generated_spectrograms, fake_spectrograms)
+					unprocessed_fake_spectrograms = inv_log_spectrogram(25 * (fake_spectrograms-1))
+					fake_sounds = self._spectrogramInverter.invertSpectrograms(unprocessed_fake_spectrograms)
+					real_sounds = self._spectrogramInverter.invertSpectrograms(inv_log_spectrogram(25 * (real_spectrograms - 1)).detach().cpu().numpy().squeeze())
+
+					self.summarizer.trackScalar("Gen/Projection_loss", torch.from_numpy(
+						self._spectrogramInverter.projectionLossBetween(unprocessed_fake_spectrograms,
+																		fake_sounds)
+						* self.args['tensorboard_interval']))
+
+					self.summarizer.writeSummary(batch_idx, real_spectrograms, generated_spectrograms, fake_spectrograms,
+												 fake_sounds, real_sounds, self.args['sampling_rate'])
 				if batch_idx % self.args['save_interval'] == 0:
 					self.model_saver.saveModel(self, batch_idx, epoch)
 		except KeyboardInterrupt:
