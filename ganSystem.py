@@ -1,8 +1,9 @@
 import torch
 from torch import nn
+import torch.nn.functional as F
 
 from model.borderEncoder import BorderEncoder
-from model.discriminatorpow2loss import Discriminator
+from model.discriminator import Discriminator
 from model.generator import Generator
 from utils.consoleSummarizer import ConsoleSummarizer
 
@@ -18,7 +19,7 @@ class GANSystem(object):
 		self.args = args
 		device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 		self.discriminators = nn.ModuleList(
-			[Discriminator(args['discriminator'], args['discriminator_in_shape'])
+			[Discriminator(args['discriminator'])
 			 for _ in range(args['discriminator_count'])]).to(device)
 
 		self.left_border_encoder = BorderEncoder(args['borderEncoder']).to(device)
@@ -82,12 +83,13 @@ class GANSystem(object):
 						d_loss_f = discriminator(x_fake)
 						d_loss_r = discriminator(x_real)
 
-						disc_loss = torch.mean(torch.pow(d_loss_r - 1.0, 2)) + torch.mean(torch.pow(d_loss_f, 2))
+						disc_loss_r = F.relu(1 - d_loss_r).mean()
+						disc_loss_f = F.relu(1 + d_loss_f).mean()
+						disc_loss = disc_loss_r + disc_loss_f
 
-						self.summarizer.trackScalar("Disc{:1d}/Neg_Loss".format(int(index)), -disc_loss)
-						self.summarizer.trackScalar("Disc{:1d}/Neg_Critic".format(int(index)), d_loss_f.mean() - d_loss_r.mean())
-						self.summarizer.trackScalar("Disc{:1d}/Loss_f".format(int(index)), d_loss_f.mean())
-						self.summarizer.trackScalar("Disc{:1d}/Loss_r".format(int(index)), d_loss_r.mean())
+						self.summarizer.trackScalar("Disc{:1d}/Loss".format(int(index)), disc_loss)
+						self.summarizer.trackScalar("Disc{:1d}/Loss_f".format(int(index)), disc_loss_f)
+						self.summarizer.trackScalar("Disc{:1d}/Loss_r".format(int(index)), disc_loss_r)
 
 						disc_loss.backward()
 						optim_d.step()
@@ -114,7 +116,7 @@ class GANSystem(object):
 
 					d_loss_f = discriminator(x_fake)
 
-					gen_loss += torch.mean(torch.pow(d_loss_f - 1.0, 2))
+					gen_loss += - d_loss_f.mean()
 
 				self.summarizer.trackScalar("Gen/Loss", gen_loss)
 
