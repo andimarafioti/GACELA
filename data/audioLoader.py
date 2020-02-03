@@ -34,7 +34,7 @@ class AudioLoader(object):
 		spectrogram = self._anStft.spectrogram(audio)
 		logSpectrogram = log_spectrogram(spectrogram, dynamic_range_dB=self._dynamic_range_dB)
 
-		logSpectrogram = logSpectrogram / (-self._dynamic_range_dB / 2) + 1
+		logSpectrogram = logSpectrogram / (self._dynamic_range_dB / 2) + 1
 		return logSpectrogram
 
 	def loadAsSpectrogram(self, file_name):
