@@ -1,8 +1,7 @@
 
 import numpy as np
-
-from stft4pghi.tifresi.metrics import projection_loss
-from stft4pghi.tifresi.stft import GaussTruncTF
+from tifresi.metrics import projection_loss
+from tifresi.stft import GaussTruncTF
 
 __author__ = 'Andres'
 

@@ -1,8 +1,7 @@
 import librosa
 import numpy as np
-
-from stft4pghi.tifresi.stft import GaussTruncTF
-from stft4pghi.tifresi.transforms import log_spectrogram
+from tifresi.stft import GaussTruncTF
+from tifresi.transforms import log_spectrogram
 
 __author__ = 'Andres'
 

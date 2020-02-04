@@ -1,11 +1,11 @@
 import torch
+from tifresi.transforms import inv_log_spectrogram
 from torch import nn
 import torch.nn.functional as F
 
 from model.borderEncoder import BorderEncoder
 from model.discriminator import Discriminator
 from model.generator import Generator
-from stft4pghi.tifresi.transforms import inv_log_spectrogram
 from utils.consoleSummarizer import ConsoleSummarizer
 from utils.spectrogramInverter import SpectrogramInverter
 
