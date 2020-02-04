@@ -1,6 +1,5 @@
-import os
-import glob
 import numpy as np
+from pathlib import Path
 import torch
 import torch.utils.data as data
 
@@ -22,7 +21,7 @@ class BaseDataset(data.Dataset):
         self._file_usages = file_usages
 
         self._index = 0
-        self.filenames = glob.glob(os.path.join(root, "*.wav"))
+        self.filenames = Path(root).rglob('*.wav')
         for pattern in blacklist_patterns:
             self.filenames = self.blacklist(self.filenames, pattern)
 
