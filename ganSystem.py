@@ -5,8 +5,7 @@ import torch.nn.functional as F
 from model.borderEncoder import BorderEncoder
 from model.discriminator import Discriminator
 from model.generator import Generator
-from stft4pghi.stft import GaussTruncTF
-from stft4pghi.transforms import inv_log_spectrogram
+from stft4pghi.tifresi.transforms import inv_log_spectrogram
 from utils.consoleSummarizer import ConsoleSummarizer
 from utils.spectrogramInverter import SpectrogramInverter
 
@@ -130,9 +129,9 @@ class GANSystem(object):
 				if batch_idx % self.args['log_interval'] == 0:
 					self.consoleSummarizer.printSummary(batch_idx, epoch)
 				if batch_idx % self.args['tensorboard_interval'] == 0:
-					unprocessed_fake_spectrograms = inv_log_spectrogram(25 * (fake_spectrograms-1))
+					unprocessed_fake_spectrograms = inv_log_spectrogram(25 * (fake_spectrograms[:8]-1)).detach().cpu().numpy().squeeze()
 					fake_sounds = self._spectrogramInverter.invertSpectrograms(unprocessed_fake_spectrograms)
-					real_sounds = self._spectrogramInverter.invertSpectrograms(inv_log_spectrogram(25 * (real_spectrograms - 1)).detach().cpu().numpy().squeeze())
+					real_sounds = self._spectrogramInverter.invertSpectrograms(inv_log_spectrogram(25 * (real_spectrograms[:8] - 1)).detach().cpu().numpy().squeeze())
 
 					self.summarizer.trackScalar("Gen/Projection_loss", torch.from_numpy(
 						self._spectrogramInverter.projectionLossBetween(unprocessed_fake_spectrograms,
