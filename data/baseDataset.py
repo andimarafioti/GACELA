@@ -21,7 +21,7 @@ class BaseDataset(data.Dataset):
         self._file_usages = file_usages
 
         self._index = 0
-        self.filenames = Path(root).rglob('*.wav')
+        self.filenames = [filename for filename in Path(root).rglob('*.wav')]
         for pattern in blacklist_patterns:
             self.filenames = self.blacklist(self.filenames, pattern)
 
