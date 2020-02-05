@@ -31,7 +31,7 @@ class TensorboardSummarizer(object):
                inharmonicity.mean(), inharmonicity.std(), tuning_frequency.mean(), tuning_frequency.std()
 
     def tonalAnalysis(self, signal):
-        vectorinput = ess.VectorInput(signal)
+        vectorinput = ess.VectorInput(np.single(signal))
         framecutter = ess.FrameCutter(frameSize=4096, hopSize=2048, silentFrames='noise')
         windowing = ess.Windowing(type='blackmanharris62')
         spectrum = ess.Spectrum()
