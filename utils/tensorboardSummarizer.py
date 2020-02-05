@@ -25,7 +25,7 @@ class TensorboardSummarizer(object):
             self._tracked_scalars[summaryName] = scalar.detach().data.mean()
 
     def musicAnalysis(self, signal):
-        bpm, beats, beats_confidence, _, beats_intervals = self._rhythm_extractor(signal)
+        bpm, beats, beats_confidence, _, beats_intervals = self._rhythm_extractor(np.single(signal))
         dissonance, inharmonicity, tuning_frequency = self.tonalAnalysis(signal)
         return beats_confidence, dissonance.mean(), dissonance.std(), \
                inharmonicity.mean(), inharmonicity.std(), tuning_frequency.mean(), tuning_frequency.std()
