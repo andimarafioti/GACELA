@@ -5,12 +5,15 @@ from torch.utils.tensorboard import SummaryWriter
 from utils.colorize import colorize
 from utils.consistencyComputer import consistency
 
+from essentia.standard import RhythmExtractor2013
+
 
 class TensorboardSummarizer(object):
 	def __init__(self, folderName, writeInterval):
 		super(TensorboardSummarizer, self).__init__()
 		self._summary_writer = SummaryWriter(folderName)
 		self._writeInterval = writeInterval
+		self._rhythm_extractor = RhythmExtractor2013(method="multifeature")
 		self._tracked_scalars = {}
 
 	def trackScalar(self, summaryName, scalar):
@@ -24,6 +27,17 @@ class TensorboardSummarizer(object):
 			self._summary_writer.add_scalar(summaryName, self._tracked_scalars[summaryName]/self._writeInterval,
 											global_step=batch_idx)
 		self._tracked_scalars = {}
+
+		fake_beats_confidence = np.zeros([len(fake_sounds)])
+		real_beats_confidence = np.zeros([len(fake_sounds)])
+		for index, (fake, real) in enumerate(zip(fake_sounds, real_sounds)):
+			bpm, beats, beats_confidence, _, beats_intervals = self._rhythm_extractor(fake)
+			fake_beats_confidence[index] = beats_confidence
+			bpm, beats, beats_confidence, _, beats_intervals = self._rhythm_extractor(real)
+			real_beats_confidence[index] = beats_confidence
+
+		self._summary_writer.add_scalar("Gen/Real_beats_confidence", torch.mean(real_beats_confidence), global_step=batch_idx)
+		self._summary_writer.add_scalar("Gen/Fake_beats_confidence", torch.abs(fake_beats_confidence), global_step=batch_idx)
 
 		real_c = consistency((real_spectrograms - 1) * 5)
 		fake_c = consistency((generated_spectrograms - 1) * 5)
