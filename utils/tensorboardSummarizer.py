@@ -75,8 +75,8 @@ class TensorboardSummarizer(object):
                                             global_step=batch_idx)
         self._tracked_scalars = {}
 
-        music_analysis_fake_signal = np.zeros([len(fake_sounds), 8])
-        music_analysis_real_signal = np.zeros([len(real_sounds), 8])
+        music_analysis_fake_signal = np.zeros([len(fake_sounds), 7])
+        music_analysis_real_signal = np.zeros([len(real_sounds), 7])
         for index, (fake, real) in enumerate(zip(fake_sounds, real_sounds)):
             music_analysis_fake_signal[index] = self.musicAnalysis(fake)
             music_analysis_real_signal[index] = self.musicAnalysis(real)
