@@ -6,9 +6,10 @@ __author__ = 'Andres'
 
 
 class Discriminator(nn.Module):
-    def __init__(self, params):
+    def __init__(self, params, in_shape):
         super(Discriminator, self).__init__()
         self._params = params
+        self._in_shape = in_shape
         self.conv_discriminator = nn.ModuleList()
 
         curr_channel_count = self._params['data_size'] - 1
@@ -18,13 +19,36 @@ class Discriminator(nn.Module):
                 nn.Conv2d(in_channels=curr_channel_count, out_channels=nfilters,
                                                kernel_size=kernel_shape, stride=stride,
                                                padding=2),
-                nn.LeakyReLU(0.2, True),
+                nn.LeakyReLU(),
             ))
             curr_channel_count = nfilters
+        shapeAfterConvs = self._infer_conv_output_shape(self._params['batch_size'],
+                                                        self._in_shape)
+        linearInputChannels = 1
+        for dim in shapeAfterConvs[1:]:
+            linearInputChannels = linearInputChannels*dim
 
-    def forward(self, x):
+        self.lin_discriminator = nn.ModuleList([nn.Sequential(nn.Linear(linearInputChannels, 1))])
+
+    def _infer_conv_output_shape(self, batch_size, input_shape):
+        mock = torch.zeros(batch_size, *input_shape)
+        mock = self.forward_conv(mock)
+        return mock.size()
+
+    def forward_conv(self, x):
         for module in self.conv_discriminator:
             x = module(x)
+        return x
+
+    def forward_lin(self, x):
+        for module in self.lin_discriminator:
+            x = module(x)
+        return x
+
+    def forward(self, x):
+        x = self.forward_conv(x)
+        x = x.view(x.size()[0], -1)
+        x = self.forward_lin(x)
         return x
 
 

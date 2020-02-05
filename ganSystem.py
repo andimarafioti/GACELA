@@ -21,7 +21,7 @@ class GANSystem(object):
 		self.args = args
 		device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 		self.discriminators = nn.ModuleList(
-			[Discriminator(args['discriminator'])
+			[Discriminator(args['discriminator'], args['discriminator_in_shape'])
 			 for _ in range(args['discriminator_count'])]).to(device)
 
 		self.left_border_encoder = BorderEncoder(args['borderEncoder']).to(device)
