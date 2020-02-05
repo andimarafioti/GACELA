@@ -2,9 +2,9 @@ import librosa
 import numpy as np
 from tifresi.stft import GaussTruncTF
 from tifresi.transforms import log_spectrogram
+from tifresi.utils import preprocess_signal
 
 __author__ = 'Andres'
-
 
 class AudioLoader(object):
 	def __init__(self, sampling_rate, window_length, hop_size, dynamic_range_dB=50, normalize=True):
@@ -25,7 +25,7 @@ class AudioLoader(object):
 
 	def loadSound(self, file_name):
 		audio, sr = librosa.load(file_name, sr=self._sampling_rate, dtype=np.float64)
-		return audio
+		return preprocess_signal(audio)
 
 	def computeSpectrogram(self, audio):
 		audio = audio[:len(audio)-np.mod(len(audio), self._window_length)]
