@@ -75,41 +75,41 @@ class TensorboardSummarizer(object):
                                             global_step=batch_idx)
         self._tracked_scalars = {}
 
-        music_analysis_fake_signal = np.zeros([len(fake_sounds), 7])
-        music_analysis_real_signal = np.zeros([len(real_sounds), 7])
+        music_analysis_fake_signal = np.zeros([7, len(fake_sounds)])
+        music_analysis_real_signal = np.zeros([7, len(real_sounds)])
         for index, (fake, real) in enumerate(zip(fake_sounds, real_sounds)):
-            music_analysis_fake_signal[index] = self.musicAnalysis(fake)
-            music_analysis_real_signal[index] = self.musicAnalysis(real)
+            music_analysis_fake_signal[:, index] = self.musicAnalysis(fake)
+            music_analysis_real_signal[:, index] = self.musicAnalysis(real)
 
         self._summary_writer.add_scalar("MusicAnalysis/Real_beats_confidence",
-                                        torch.mean(music_analysis_real_signal[0]), global_step=batch_idx)
+                                        np.mean(music_analysis_real_signal[0]), global_step=batch_idx)
         self._summary_writer.add_scalar("MusicAnalysis/Real_dissonance_mean",
-                                        torch.mean(music_analysis_real_signal[1]), global_step=batch_idx)
+                                        np.mean(music_analysis_real_signal[1]), global_step=batch_idx)
         self._summary_writer.add_scalar("MusicAnalysis/Real_dissonance_std",
-                                        torch.mean(music_analysis_real_signal[2]), global_step=batch_idx)
+                                        np.mean(music_analysis_real_signal[2]), global_step=batch_idx)
         self._summary_writer.add_scalar("MusicAnalysis/Real_inharmonicity_mean",
-                                        torch.mean(music_analysis_real_signal[3]), global_step=batch_idx)
+                                        np.mean(music_analysis_real_signal[3]), global_step=batch_idx)
         self._summary_writer.add_scalar("MusicAnalysis/Real_inharmonicity_std",
-                                        torch.mean(music_analysis_real_signal[4]), global_step=batch_idx)
+                                        np.mean(music_analysis_real_signal[4]), global_step=batch_idx)
         self._summary_writer.add_scalar("MusicAnalysis/Real_tuning_frequency_mean",
-                                        torch.mean(music_analysis_real_signal[5]), global_step=batch_idx)
+                                        np.mean(music_analysis_real_signal[5]), global_step=batch_idx)
         self._summary_writer.add_scalar("MusicAnalysis/Real_tuning_frequency_std",
-                                        torch.mean(music_analysis_real_signal[6]), global_step=batch_idx)
+                                        np.mean(music_analysis_real_signal[6]), global_step=batch_idx)
 
         self._summary_writer.add_scalar("MusicAnalysis/Fake_beats_confidence",
-                                        torch.mean(music_analysis_fake_signal[0]), global_step=batch_idx)
+                                        np.mean(music_analysis_fake_signal[0]), global_step=batch_idx)
         self._summary_writer.add_scalar("MusicAnalysis/Fake_dissonance_mean",
-                                        torch.mean(music_analysis_fake_signal[1]), global_step=batch_idx)
+                                        np.mean(music_analysis_fake_signal[1]), global_step=batch_idx)
         self._summary_writer.add_scalar("MusicAnalysis/Fake_dissonance_std",
-                                        torch.mean(music_analysis_fake_signal[2]), global_step=batch_idx)
+                                        np.mean(music_analysis_fake_signal[2]), global_step=batch_idx)
         self._summary_writer.add_scalar("MusicAnalysis/Fake_inharmonicity_mean",
-                                        torch.mean(music_analysis_fake_signal[3]), global_step=batch_idx)
+                                        np.mean(music_analysis_fake_signal[3]), global_step=batch_idx)
         self._summary_writer.add_scalar("MusicAnalysis/Fake_inharmonicity_std",
-                                        torch.mean(music_analysis_fake_signal[4]), global_step=batch_idx)
+                                        np.mean(music_analysis_fake_signal[4]), global_step=batch_idx)
         self._summary_writer.add_scalar("MusicAnalysis/Fake_tuning_frequency_mean",
-                                        torch.mean(music_analysis_fake_signal[5]), global_step=batch_idx)
+                                        np.mean(music_analysis_fake_signal[5]), global_step=batch_idx)
         self._summary_writer.add_scalar("MusicAnalysis/Fake_tuning_frequency_std",
-                                        torch.mean(music_analysis_fake_signal[6]), global_step=batch_idx)
+                                        np.mean(music_analysis_fake_signal[6]), global_step=batch_idx)
 
 
         real_c = consistency((real_spectrograms - 1) * 5)
