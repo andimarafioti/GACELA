@@ -116,7 +116,7 @@ class GANSystem(object):
 
 					d_loss_f = discriminator(x_fake)
 
-					torch.mean(torch.pow(d_loss_f - 1.0, 2))
+					gen_loss += torch.mean(torch.pow(d_loss_f - 1.0, 2))
 
 				self.summarizer.trackScalar("Gen/Loss", gen_loss)
 
