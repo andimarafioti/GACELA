@@ -85,14 +85,11 @@ class GANSystem(object):
 
 						d_loss_f = discriminator(x_fake)
 						d_loss_r = discriminator(x_real)
-
-						disc_loss_r = F.relu(1 - d_loss_r).mean()
-						disc_loss_f = F.relu(1 + d_loss_f).mean()
-						disc_loss = disc_loss_r + disc_loss_f
+						disc_loss = torch.mean(torch.pow(d_loss_r - 1.0, 2)) + torch.mean(torch.pow(d_loss_f, 2))
 
 						self.summarizer.trackScalar("Disc{:1d}/Loss".format(int(index)), disc_loss)
-						self.summarizer.trackScalar("Disc{:1d}/Loss_f".format(int(index)), disc_loss_f)
-						self.summarizer.trackScalar("Disc{:1d}/Loss_r".format(int(index)), disc_loss_r)
+						self.summarizer.trackScalar("Disc{:1d}/Loss_f".format(int(index)), d_loss_f)
+						self.summarizer.trackScalar("Disc{:1d}/Loss_r".format(int(index)), d_loss_r)
 
 						disc_loss.backward()
 						optim_d.step()
@@ -119,7 +116,7 @@ class GANSystem(object):
 
 					d_loss_f = discriminator(x_fake)
 
-					gen_loss += - d_loss_f.mean()
+					torch.mean(torch.pow(d_loss_f - 1.0, 2))
 
 				self.summarizer.trackScalar("Gen/Loss", gen_loss)
 
