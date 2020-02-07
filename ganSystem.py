@@ -11,6 +11,7 @@ from utils.spectrogramInverter import SpectrogramInverter
 
 from utils.tensorboardSummarizer import TensorboardSummarizer
 from utils.torchModelSaver import TorchModelSaver
+from utils.wassersteinGradientPenalty import calc_gradient_penalty_bayes
 
 __author__ = 'Andres'
 
@@ -85,9 +86,13 @@ class GANSystem(object):
 
 						d_loss_f = discriminator(x_fake)
 						d_loss_r = discriminator(x_real)
-						disc_loss = torch.mean(torch.pow(d_loss_r - 1.0, 2)) + torch.mean(torch.pow(d_loss_f, 2))
+
+						grad_pen = calc_gradient_penalty_bayes(discriminator, x_real, x_fake, self.args['gamma_gp'])
+						d_loss_gp = torch.mean(grad_pen)
+						disc_loss = d_loss_f - d_loss_r + d_loss_gp
 
 						self.summarizer.trackScalar("Disc{:1d}/Loss".format(int(index)), disc_loss)
+						self.summarizer.trackScalar("Disc{:1d}/GradPen".format(int(index)), d_loss_gp)
 						self.summarizer.trackScalar("Disc{:1d}/Loss_f".format(int(index)), d_loss_f)
 						self.summarizer.trackScalar("Disc{:1d}/Loss_r".format(int(index)), d_loss_r)
 
@@ -115,8 +120,7 @@ class GANSystem(object):
 					x_fake = fake_spectrograms[:, :, :, start:end:scale]
 
 					d_loss_f = discriminator(x_fake)
-
-					gen_loss += torch.mean(torch.pow(d_loss_f - 1.0, 2))
+					gen_loss += - d_loss_f.mean()
 
 				self.summarizer.trackScalar("Gen/Loss", gen_loss)
 
