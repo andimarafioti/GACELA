@@ -84,11 +84,11 @@ class GANSystem(object):
 						x_fake = fake_spectrograms[:, :, :, start:end:scale].detach()
 						x_real = real_spectrograms[:, :, :, start:end:scale].detach()
 
-						d_loss_f = discriminator(x_fake)
-						d_loss_r = discriminator(x_real)
+						d_loss_f = discriminator(x_fake).mean()
+						d_loss_r = discriminator(x_real).mean()
 
 						grad_pen = calc_gradient_penalty_bayes(discriminator, x_real, x_fake, self.args['gamma_gp'])
-						d_loss_gp = torch.mean(grad_pen)
+						d_loss_gp = grad_pen.mean()
 						disc_loss = d_loss_f - d_loss_r + d_loss_gp
 
 						self.summarizer.trackScalar("Disc{:1d}/Loss".format(int(index)), disc_loss)
