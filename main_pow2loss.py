@@ -1,8 +1,8 @@
 import torch
-torch.cuda.init()
 
+from data.audioLoader import AudioLoader
 from data.trainDataset import TrainDataset
-from ganSystem import GANSystem
+from ganSystemPow2Loss import GANSystem
 import logging
 
 # logging.getLogger().setLevel(logging.DEBUG)  # set root logger to debug
@@ -18,37 +18,34 @@ logging.getLogger().addHandler(console_handler)
 __author__ = 'Andres'
 
 
-signal_split = [192, 128, 192]
+signal_split = [224, 64, 224]
 md = 32
 
 params_discriminator = dict()
 params_discriminator['stride'] = [2,2,2,2,2]
 params_discriminator['nfilter'] = [md, 2*md, 4*md, 8*md, 16*md]
 params_discriminator['shape'] = [[5, 5], [5, 5], [5, 5], [5, 5], [5, 5]]
-params_discriminator['full'] = []
-params_discriminator['minibatch_reg'] = False
-params_discriminator['summary'] = True
 params_discriminator['data_size'] = 2
-params_discriminator['apply_phaseshuffle'] = True
-params_discriminator['spectral_norm'] = True
 
 params_generator = dict()
 params_generator['stride'] = [2, 2, 2, 2, 2]
-params_generator['latent_dim'] = 100
 params_generator['nfilter'] = [8*md, 4*md, 2*md, md, 1]
 params_generator['shape'] = [[4, 4], [4, 4], [8, 8], [8, 8], [8, 8]]
 params_generator['padding'] = [[1, 1], [1, 1], [3, 3], [3, 3], [3, 3]]
+# params_generator['residual_blocks'] = 2
+
 params_generator['full'] = 256*md
 params_generator['summary'] = True
 params_generator['data_size'] = 2
-params_generator['spectral_norm'] = True
-params_generator['in_conv_shape'] = [8, 4]
+params_generator['in_conv_shape'] = [16, 4]
 params_generator['borders'] = dict()
 params_generator['borders']['nfilter'] = [md, 2*md, md, md/2]
 params_generator['borders']['shape'] = [[5, 5],[5, 5],[5, 5],[5, 5]]
 params_generator['borders']['stride'] = [2, 2, 3, 4]
 params_generator['borders']['data_size'] = 2
-params_generator['borders']['border_scale'] = 1
+params_generator['borders']['border_scale'] = 2
+# This does not work because of flipping, border 2 need to be flipped tf.reverse(l, axis=[1]), ask Nathanael
+params_generator['borders']['width_full'] = None
 
 
 # Optimization parameters inspired from 'Self-Attention Generative Adversarial Networks'
@@ -63,10 +60,9 @@ params_generator['borders']['border_scale'] = 1
 # - 'CGANS WITH PROJECTION DISCRIMINATOR'
 
 params_optimization = dict()
-params_optimization['batch_size'] = 64*2
-params_discriminator['batch_size'] = 64*2
+params_optimization['batch_size'] = 64
+params_discriminator['batch_size'] = 64
 
-params_optimization['epoch'] = 600
 params_optimization['n_critic'] = 1
 params_optimization['generator'] = dict()
 params_optimization['generator']['optimizer'] = 'adam'
@@ -79,51 +75,58 @@ params_optimization['discriminator']['learning_rate'] = 1e-4
 
 # all parameters
 params = dict()
-params['net'] = dict() # All the parameters for the model
+params['net'] = dict()  # All the parameters for the model
 params['net']['generator'] = params_generator
 params['net']['discriminator'] = params_discriminator
 params['net']['prior_distribution'] = 'gaussian'
-params['net']['shape'] = [1, 256, 128*4] # Shape of the image
-params['net']['inpainting']=dict()
-params['net']['inpainting']['split']=signal_split
-params['net']['gamma_gp'] = 10 # Gradient penalty
+params['net']['shape'] = [1, 512, 512]  # Shape of the image
+params['net']['inpainting'] = dict()
+params['net']['inpainting']['split'] = signal_split
+params['net']['gamma_gp'] = 10  # Gradient penalty
 # params['net']['fs'] = 16000//downscale
-params['net']['loss_type'] ='wasserstein'
+params['net']['loss_type'] = 'wasserstein'
 
 params['optimization'] = params_optimization
-params['summary_every'] = 250 # Tensorboard summaries every ** iterations
-params['print_every'] = 50 # Console summaries every ** iterations
-params['save_every'] = 1000 # Save the model every ** iterations
+params['summary_every'] = 250  # Tensorboard summaries every ** iterations
+params['print_every'] = 50  # Console summaries every ** iterations
+params['save_every'] = 1000  # Save the model every ** iterations
 # params['summary_dir'] = os.path.join(global_path, name +'_summary/')
 # params['save_dir'] = os.path.join(global_path, name + '_checkpoints/')
-params['Nstats'] = 500
 
 args = dict()
 args['generator'] = params_generator
-args['discriminator_count'] = 3
+args['discriminator_count'] = 4
 args['discriminator'] = params_discriminator
 args['borderEncoder'] = params_generator['borders']
-args['discriminator_in_shape'] = [1, 256, 128]
-args['generator_input'] = 2*6*4*2*8+24*4
+args['discriminator_in_shape'] = [1, 512, 64]
+args['generator_input'] = 1188
 args['optimizer'] = params_optimization
 args['split'] = signal_split
-args['log_interval'] = 50
+args['log_interval'] = 100
 args['spectrogram_shape'] = params['net']['shape']
 args['gamma_gp'] = params['net']['gamma_gp']
-args['tensorboard_interval'] = 250
-args['save_path'] = '../saved_results/'
-args['experiment_name'] = 'pytorch_nc1_pow2loss_2'
-args['save_interval'] = 1000
+args['tensorboard_interval'] = 500
+args['save_path'] = 'saved_results/'
+args['experiment_name'] = 'pow2loss_old_structure'
+args['save_interval'] = 50000
 
+args['fft_length'] = 1024
+args['fft_hop_size'] = 256
+args['sampling_rate'] = 22050
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-examples_per_file = 16
-trainDataset = TrainDataset("../data/Maestro_spectrograms_mep/", window_size=512, examples_per_file=examples_per_file)
+examples_per_file = 32
+audioLoader = AudioLoader(args['sampling_rate'], args['fft_length'], args['fft_hop_size'], 50)
+
+dataFolder = "../../../Datasets/maestro-v2.0.0/"
+
+trainDataset = TrainDataset(dataFolder, window_size=512, audio_loader=audioLoader, examples_per_file=examples_per_file, loaded_files_buffer=20, file_usages=30)
 
 train_loader = torch.utils.data.DataLoader(trainDataset,
     batch_size=args['optimizer']['batch_size']//examples_per_file, shuffle=True,
                                            num_workers=4, drop_last=True)
+
 start_at_step = 0
 start_at_epoch = 0
 
