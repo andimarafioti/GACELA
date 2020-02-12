@@ -36,7 +36,7 @@ class SpectrogramInverter(object):
 		_projection_loss = np.zeros([unprocessed_spectrograms.shape[0]])
 
 		for index, audio_signal in enumerate(audio_signals):
-			reconstructed_spectrogram = self._anStft.spectrogram(audio_signal)
+			reconstructed_spectrogram = self._anStft.spectrogram(audio_signal, normalize=False)
 			_projection_loss[index] = projection_loss(reconstructed_spectrogram[:-1], unprocessed_spectrograms[index])
 		return _projection_loss
 
