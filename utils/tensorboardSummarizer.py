@@ -112,8 +112,8 @@ class TensorboardSummarizer(object):
                                         np.mean(music_analysis_fake_signal[6]), global_step=batch_idx)
 
 
-        real_c = consistency((real_spectrograms - 1) * 5)
-        fake_c = consistency((generated_spectrograms - 1) * 5)
+        real_c = consistency((real_spectrograms - 1) * 25)
+        fake_c = consistency((generated_spectrograms - 1) * 25)
 
         mean_R_Con, std_R_Con = real_c.mean(), real_c.std()
         mean_F_Con, std_F_Con = fake_c.mean(), fake_c.std()
