@@ -59,7 +59,6 @@ class Generator(nn.Module):
             nn.Tanh(),
         ))
 
-
     def forward_lin(self, x):
         for module in self.linGenerator:
             x = module(x)
