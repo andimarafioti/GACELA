@@ -41,6 +41,12 @@ class GANSystem(object):
 		self.model_saver = TorchModelSaver(args['experiment_name'], args['save_path'])
 		self._spectrogramInverter = SpectrogramInverter(args['fft_length'], args['fft_hop_size'])
 
+	def initModel(self):
+		self.model_saver.initModel(self)
+
+	def loadModel(self, batch_idx, epoch):
+		self.model_saver.loadModel(self, batch_idx, epoch)
+
 	def train(self, train_loader, epoch, batch_idx=0):
 		self.summarizer = TensorboardSummarizer(self.args['save_path'] + self.args['experiment_name'] + '_summary',
 												self.args['tensorboard_interval'])
@@ -51,9 +57,9 @@ class GANSystem(object):
 		device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 		if batch_idx == 0 and epoch == 0:
-			self.model_saver.initModel(self)
+			self.initModel()
 		else:
-			self.model_saver.loadModel(self, batch_idx, epoch-1)  # test that this works
+			self.loadModel(batch_idx, epoch-1)
 
 		print('try')
 
