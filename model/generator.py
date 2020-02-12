@@ -6,6 +6,26 @@ from model.borderEncoder import BorderEncoder
 __author__ = 'Andres'
 
 
+class ResidualLayer(nn.Module):
+    def __init__(self, channels):
+        super().__init__()
+        self.block = nn.Sequential(
+            nn.LeakyReLU(0.2),
+            nn.ConvTranspose2d(in_channels=channels, out_channels=channels,
+                                               kernel_size=5, stride=1,
+                                               padding=2),
+            nn.LeakyReLU(0.2),
+            nn.ConvTranspose2d(in_channels=channels, out_channels=channels,
+                                               kernel_size=1, stride=1,
+                                               padding=0)
+        )
+        self.shortcut = nn.ConvTranspose2d(in_channels=channels, out_channels=channels,
+                                               kernel_size=1)
+
+    def forward(self, x):
+        return self.shortcut(x) + self.block(x)
+
+
 class Generator(nn.Module):
     """Not using noise for now, since the border conditioning might already be enough"""
     def __init__(self, params, in_shape):
@@ -28,6 +48,9 @@ class Generator(nn.Module):
                 nn.ReLU(),
             ))
             curr_channel_count = nfilters
+
+        for _ in range(self._params['residual_blocks']):
+            self.convGenerator.append(ResidualLayer(curr_channel_count))
 
         self.convGenerator.append(nn.Sequential(
             nn.ConvTranspose2d(in_channels=curr_channel_count, out_channels=self._params['nfilter'][-1],
