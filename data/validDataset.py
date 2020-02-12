@@ -1,3 +1,4 @@
+import numpy as np
 from data.baseDataset import BaseDataset
 
 __author__ = 'Andres'
