@@ -132,8 +132,8 @@ class GANSystem(object):
 							start = int(signal_length // 2 - (gap_length // 2) * scale)
 							end = signal_length - start
 
-							x_fake = self.time_average(mel_spectrogram(fake_spectrograms[:, :, :, start:end]), scale).detach()
-							x_real = self.time_average(mel_spectrogram(real_spectrograms[:, :, :, start:end]), scale).detach()
+							x_fake = self.time_average(mel_spectrogram(fake_spectrograms[:, :, :, start:end].detach()), scale)
+							x_real = self.time_average(mel_spectrogram(real_spectrograms[:, :, :, start:end].detach()), scale)
 
 							d_loss_f = discriminator(x_fake).mean()
 							d_loss_r = discriminator(x_real).mean()
@@ -181,7 +181,7 @@ class GANSystem(object):
 					start = int(signal_length // 2 - (gap_length // 2) * scale)
 					end = signal_length - start
 
-					x_fake = self.time_average(mel_spectrogram(fake_spectrograms[:, :, :, start:end]), scale).detach()
+					x_fake = self.time_average(mel_spectrogram(fake_spectrograms[:, :, :, start:end].detach()), scale)
 
 					d_loss_f = discriminator(x_fake).mean()
 					gen_loss += - d_loss_f.mean()
