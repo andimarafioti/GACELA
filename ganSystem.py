@@ -1,5 +1,7 @@
+import numpy as np
 import torch
-from tifresi.transforms import inv_log_spectrogram, mel_spectrogram
+from librosa.filters import mel
+from tifresi.transforms import inv_log_spectrogram, log_spectrogram
 from torch import nn
 import torch.nn.functional as F
 
@@ -48,6 +50,10 @@ class GANSystem(object):
 		self.model_saver = TorchModelSaver(args['experiment_name'], args['save_path'])
 		self._spectrogramInverter = SpectrogramInverter(args['fft_length'], args['fft_hop_size'])
 
+		mel_basis = mel(args['sampling_rate'], args['fft_length'], 80, fmin=0, fmax=None)
+		mel_basis = np.reshape(mel_basis, (1, 1, *mel_basis.shape))
+		self.mel_basis = torch.from_numpy(np.repeat(mel_basis, args['optimization']['batch_size'], axis=0)).to(device)
+
 	def initModel(self):
 		self.model_saver.initModel(self)
 
@@ -60,6 +66,9 @@ class GANSystem(object):
 			tmp += matrix_batch[:, :, :, i::reduction_rate]
 		matrix_batch = tmp / reduction_rate
 		return matrix_batch
+
+	def mel_spectrogram(self, spectrogram):
+		return log_spectrogram(torch.matmul(self.mel_basis[:spectrogram.shape[0], :, :, :-1], inv_log_spectrogram(25 * (spectrogram - 1))))
 
 	def train(self, train_loader, epoch, batch_idx=0):
 		self.summarizer = TensorboardSummarizer(self.args['save_path'] + self.args['experiment_name'] + '_summary',
@@ -132,8 +141,8 @@ class GANSystem(object):
 							start = int(signal_length // 2 - (gap_length // 2) * scale)
 							end = signal_length - start
 
-							x_fake = self.time_average(mel_spectrogram(fake_spectrograms[:, :, :, start:end].detach().cpu()).cuda(), scale)
-							x_real = self.time_average(mel_spectrogram(real_spectrograms[:, :, :, start:end].detach().cpu()).cuda(), scale)
+							x_fake = self.time_average(self.mel_spectrogram(fake_spectrograms[:, :, :, start:end]), scale).detach()
+							x_real = self.time_average(self.mel_spectrogram(real_spectrograms[:, :, :, start:end]), scale).detach()
 
 							d_loss_f = discriminator(x_fake).mean()
 							d_loss_r = discriminator(x_real).mean()
@@ -181,7 +190,8 @@ class GANSystem(object):
 					start = int(signal_length // 2 - (gap_length // 2) * scale)
 					end = signal_length - start
 
-					x_fake = self.time_average(mel_spectrogram(fake_spectrograms[:, :, :, start:end].detach().cpu()).cuda(), scale)
+					x_fake = self.time_average(self.mel_spectrogram(fake_spectrograms[:, :, :, start:end]),
+											   scale).detach()
 
 					d_loss_f = discriminator(x_fake).mean()
 					gen_loss += - d_loss_f.mean()
