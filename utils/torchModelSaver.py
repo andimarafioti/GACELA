@@ -16,7 +16,8 @@ class TorchModelSaver(object):
         save_path = os.path.join(self._save_path + self._experiment_name + '_checkpoints', '%02d_%04d.pt' % (epoch, batch_idx))
         save_dict = {
             'generator': ganSystem.generator.state_dict(),
-            'discriminators': ganSystem.discriminators.state_dict(),
+            'stft_discriminators': ganSystem.stft_discriminators.state_dict(),
+            'mel_discriminators': ganSystem.mel_discriminators.state_dict(),
             'left_encoder': ganSystem.left_border_encoder.state_dict(),
             'right_encoder': ganSystem.right_border_encoder.state_dict(),
             'optim_g': ganSystem.optim_g.state_dict(),
@@ -30,7 +31,8 @@ class TorchModelSaver(object):
         checkpoint = torch.load(load_path)
 
         ganSystem.generator.load_state_dict(checkpoint['generator'])
-        ganSystem.discriminators.load_state_dict(checkpoint['discriminators'])
+        ganSystem.stft_discriminators.load_state_dict(checkpoint['stft_discriminators'])
+        ganSystem.mel_discriminators.load_state_dict(checkpoint['mel_discriminators'])
         ganSystem.left_border_encoder.load_state_dict(checkpoint['left_encoder'])
         ganSystem.right_border_encoder.load_state_dict(checkpoint['right_encoder'])
         ganSystem.optim_g.load_state_dict(checkpoint['optim_g'])
