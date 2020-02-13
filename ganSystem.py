@@ -68,7 +68,7 @@ class GANSystem(object):
 		return matrix_batch
 
 	def mel_spectrogram(self, spectrogram):
-		return log_spectrogram(torch.matmul(self.mel_basis[:spectrogram.shape[0], :, :, :-1], inv_log_spectrogram(25 * (spectrogram - 1))))
+		return 10*torch.log10(torch.matmul(self.mel_basis[:spectrogram.shape[0], :, :, :-1], inv_log_spectrogram(25 * (spectrogram - 1))))
 
 	def train(self, train_loader, epoch, batch_idx=0):
 		self.summarizer = TensorboardSummarizer(self.args['save_path'] + self.args['experiment_name'] + '_summary',
