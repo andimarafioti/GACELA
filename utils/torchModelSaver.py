@@ -22,8 +22,10 @@ class TorchModelSaver(object):
             'right_encoder': ganSystem.right_border_encoder.state_dict(),
             'optim_g': ganSystem.optim_g.state_dict(),
         }
-        for index, optim_d in enumerate(ganSystem.optims_d):
-            save_dict['optim_d_' + str(index)] = optim_d.state_dict()
+        for index, optim_d in enumerate(ganSystem.stft_optims_d):
+            save_dict['stft_optims_d' + str(index)] = optim_d.state_dict()
+        for index, optim_d in enumerate(ganSystem.mel_optims_d):
+            save_dict['mel_optims_d' + str(index)] = optim_d.state_dict()
         torch.save(save_dict, save_path)
 
     def loadModel(self, ganSystem, batch_idx, epoch):
@@ -37,8 +39,10 @@ class TorchModelSaver(object):
         ganSystem.right_border_encoder.load_state_dict(checkpoint['right_encoder'])
         ganSystem.optim_g.load_state_dict(checkpoint['optim_g'])
 
-        for index, optim_d in enumerate(ganSystem.optims_d):
-            optim_d.load_state_dict(checkpoint['optim_d_' + str(index)])
+        for index, optim_d in enumerate(ganSystem.stft_optims_d):
+            optim_d.load_state_dict(checkpoint['stft_optims_d' + str(index)])
+        for index, optim_d in enumerate(ganSystem.mel_optims_d):
+            optim_d.load_state_dict(checkpoint['mel_optims_d' + str(index)])
 
     def loadGenerator(self, generator, left_border_encoder, right_border_encoder, batch_idx, epoch):
         load_path = os.path.join(self._save_path + self._experiment_name + '_checkpoints', '%02d_%04d.pt' % (epoch, batch_idx))
