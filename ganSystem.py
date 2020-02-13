@@ -94,19 +94,21 @@ class GANSystem(object):
 				real_spectrograms = data[::2]
 				fake_left_borders = data[1::2, :, :, :self.args['split'][0]]
 				fake_right_borders = data[1::2, :, :, self.args['split'][0] + self.args['split'][1]:]
-				encoded_left_border = self.left_border_encoder(fake_left_borders)
-				encoded_right_border = self.right_border_encoder(fake_right_borders)
-				encoded_size = encoded_left_border.size()
-				noise = torch.rand(encoded_size[0], 4, encoded_size[2], encoded_size[3]).to(device)
-				generated_spectrograms = self.generator(
-					torch.cat((encoded_left_border, encoded_right_border, noise), 1))
-
-				fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
 
 				# optimize stft_D
 				for _ in range(self.args['optimizer']['n_critic']):
 					for index, (discriminator, optim_d) in enumerate(zip(self.stft_discriminators, self.stft_optims_d)):
 						optim_d.zero_grad()
+						encoded_left_border = self.left_border_encoder(fake_left_borders)
+						encoded_right_border = self.right_border_encoder(fake_right_borders)
+						encoded_size = encoded_left_border.size()
+						noise = torch.rand(encoded_size[0], 4, encoded_size[2], encoded_size[3]).to(device)
+						generated_spectrograms = self.generator(
+							torch.cat((encoded_left_border, encoded_right_border, noise), 1))
+
+						fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders),
+													  3)
+
 						scale = 2 ** index
 						signal_length = self.args['spectrogram_shape'][2]
 						gap_length = self.args['split'][1]
@@ -135,6 +137,17 @@ class GANSystem(object):
 						for index, (discriminator, optim_d) in enumerate(
 								zip(self.mel_discriminators, self.mel_optims_d), self.args['mel_discriminator_start_powscale']):
 							optim_d.zero_grad()
+							encoded_left_border = self.left_border_encoder(fake_left_borders)
+							encoded_right_border = self.right_border_encoder(fake_right_borders)
+							encoded_size = encoded_left_border.size()
+							noise = torch.rand(encoded_size[0], 4, encoded_size[2], encoded_size[3]).to(device)
+							generated_spectrograms = self.generator(
+								torch.cat((encoded_left_border, encoded_right_border, noise), 1))
+
+							fake_spectrograms = torch.cat(
+								(fake_left_borders, generated_spectrograms, fake_right_borders),
+								3)
+
 							scale = 2 ** index
 							signal_length = self.args['spectrogram_shape'][2]
 							gap_length = self.args['split'][1]
@@ -163,16 +176,17 @@ class GANSystem(object):
 
 				self.optim_g.zero_grad()
 
-				encoded_left_border = self.left_border_encoder(fake_left_borders)
-				encoded_right_border = self.right_border_encoder(fake_right_borders)
-				encoded_size = encoded_left_border.size()
-				noise = torch.rand(encoded_size[0], 4, encoded_size[2], encoded_size[3]).to(device)
-				generated_spectrograms = self.generator(torch.cat((encoded_left_border, encoded_right_border, noise), 1))
-
-				fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
 				gen_loss = 0
 
 				for index, discriminator in enumerate(self.stft_discriminators):
+					encoded_left_border = self.left_border_encoder(fake_left_borders)
+					encoded_right_border = self.right_border_encoder(fake_right_borders)
+					encoded_size = encoded_left_border.size()
+					noise = torch.rand(encoded_size[0], 4, encoded_size[2], encoded_size[3]).to(device)
+					generated_spectrograms = self.generator(
+						torch.cat((encoded_left_border, encoded_right_border, noise), 1))
+
+					fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
 					scale = 2 ** index
 					signal_length = self.args['spectrogram_shape'][2]
 					gap_length = self.args['split'][1]
@@ -185,6 +199,15 @@ class GANSystem(object):
 
 				for index, discriminator in enumerate(
 						self.mel_discriminators, self.args['mel_discriminator_start_powscale']):
+					encoded_left_border = self.left_border_encoder(fake_left_borders)
+					encoded_right_border = self.right_border_encoder(fake_right_borders)
+					encoded_size = encoded_left_border.size()
+					noise = torch.rand(encoded_size[0], 4, encoded_size[2], encoded_size[3]).to(device)
+					generated_spectrograms = self.generator(
+						torch.cat((encoded_left_border, encoded_right_border, noise), 1))
+
+					fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
+
 					signal_length = self.args['spectrogram_shape'][2]
 					gap_length = self.args['split'][1]
 					start = int(signal_length // 2 - (gap_length // 2) * scale)
