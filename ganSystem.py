@@ -52,7 +52,7 @@ class GANSystem(object):
 
 		mel_basis = mel(args['sampling_rate'], args['fft_length'], 80, fmin=0, fmax=None)
 		mel_basis = np.reshape(mel_basis, (1, 1, *mel_basis.shape))
-		self.mel_basis = torch.from_numpy(np.repeat(mel_basis, args['optimization']['batch_size'], axis=0)).to(device)
+		self.mel_basis = torch.from_numpy(np.repeat(mel_basis, args['optimizer']['batch_size'], axis=0)).to(device)
 
 	def initModel(self):
 		self.model_saver.initModel(self)
