@@ -50,7 +50,8 @@ class TorchModelSaver(object):
 
     def initModel(self, ganSystem):
         self.makeFolder()
-        ganSystem.discriminators.apply(init_weights)
+        ganSystem.stft_discriminators.apply(init_weights)
+        ganSystem.mel_discriminators.apply(init_weights)
         ganSystem.left_border_encoder.apply(init_weights)
         ganSystem.right_border_encoder.apply(init_weights)
         ganSystem.generator.apply(init_weights)
