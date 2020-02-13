@@ -117,7 +117,7 @@ args['spectrogram_shape'] = params['net']['shape']
 args['gamma_gp'] = params['net']['gamma_gp']
 args['tensorboard_interval'] = 500
 args['save_path'] = 'saved_results/'
-args['experiment_name'] = 'wasserstein_old_params_structures_96_64_nd3_2skip'
+args['experiment_name'] = 'wasserstein_stft_2_mel_3_melstartpow2'
 args['save_interval'] = 50000
 
 args['fft_length'] = 1024
