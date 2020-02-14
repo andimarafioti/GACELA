@@ -47,6 +47,13 @@ class GANSystem(object):
 	def loadModel(self, batch_idx, epoch):
 		self.model_saver.loadModel(self, batch_idx, epoch)
 
+	def time_average(self, matrix_batch, reduction_rate):
+		tmp = torch.zeros([matrix_batch.shape[0], matrix_batch.shape[1], matrix_batch.shape[2], matrix_batch.shape[3] // reduction_rate]).float().cuda()
+		for i in range(reduction_rate):
+			tmp += matrix_batch[:, :, :, i::reduction_rate]
+		matrix_batch = tmp / reduction_rate
+		return matrix_batch
+
 	def train(self, train_loader, epoch, batch_idx=0):
 		self.summarizer = TensorboardSummarizer(self.args['save_path'] + self.args['experiment_name'] + '_summary',
 												self.args['tensorboard_interval'])
@@ -71,24 +78,24 @@ class GANSystem(object):
 				real_spectrograms = data[::2]
 				fake_left_borders = data[1::2, :, :, :self.args['split'][0]]
 				fake_right_borders = data[1::2, :, :, self.args['split'][0] + self.args['split'][1]:]
+				encoded_left_border = self.left_border_encoder(fake_left_borders)
+				encoded_right_border = self.right_border_encoder(fake_right_borders)
+				encoded_size = encoded_left_border.size()
+				noise = torch.rand(encoded_size[0], 4, encoded_size[2], encoded_size[3]).to(device)
+				generated_spectrograms = self.generator(torch.cat((encoded_left_border, encoded_right_border, noise), 1))
+
+				fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
 
 				# optimize D
 				for _ in range(self.args['optimizer']['n_critic']):
 					for index, (discriminator, optim_d) in enumerate(zip(self.discriminators, self.optims_d)):
 						optim_d.zero_grad()
-						encoded_left_border = self.left_border_encoder(fake_left_borders)
-						encoded_right_border = self.right_border_encoder(fake_right_borders)
-						encoded_size = encoded_left_border.size()
-						noise = torch.rand(encoded_size[0], 4, encoded_size[2], encoded_size[3]).to(device)
-						generated_spectrograms = self.generator(torch.cat((encoded_left_border, encoded_right_border, noise), 1))
-
-						fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
 						scale = 2 ** index
 						time_axis = self.args['spectrogram_shape'][2]
 						start = int((time_axis - (time_axis // (2**(len(self.discriminators)-1))) * scale) / 2)
 						end = time_axis - start
-						x_fake = fake_spectrograms[:, :, :, start:end:scale].detach()
-						x_real = real_spectrograms[:, :, :, start:end:scale].detach()
+						x_fake = self.time_average(fake_spectrograms[:, :, :, start:end], scale).detach()
+						x_real = self.time_average(real_spectrograms[:, :, :, start:end, scale).detach()
 
 						d_loss_f = discriminator(x_fake).mean()
 						d_loss_r = discriminator(x_real).mean()
@@ -123,7 +130,7 @@ class GANSystem(object):
 					time_axis = self.args['spectrogram_shape'][2]
 					start = int((time_axis - (time_axis // (2**(len(self.discriminators)-1))) * scale) / 2)
 					end = time_axis - start
-					x_fake = fake_spectrograms[:, :, :, start:end:scale]
+					x_fake = self.time_average(fake_spectrograms[:, :, :, start:end, scale)
 
 					d_loss_f = discriminator(x_fake)
 					gen_loss += - d_loss_f.mean()
