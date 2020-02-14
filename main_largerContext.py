@@ -17,36 +17,40 @@ logging.getLogger().addHandler(console_handler)
 
 __author__ = 'Andres'
 
-
-signal_split = [448, 128, 448]
+signal_split = [224, 64, 224]
 md = 32
 
 params_discriminator = dict()
-params_discriminator['stride'] = [1, 1, 2, 2, 1]
-params_discriminator['nfilter'] = [md, md, 2 * md, 4 * md, 1]
+params_discriminator['stride'] = [2, 2, 2, 2, 2]
+params_discriminator['nfilter'] = [md, 2 * md, 4 * md, 8 * md, 16 * md]
 params_discriminator['shape'] = [[5, 5], [5, 5], [5, 5], [5, 5], [5, 5]]
 params_discriminator['data_size'] = 2
 
+params_mel_discriminator = dict()
+params_mel_discriminator['stride'] = [2, 2, 2, 2, 2]
+params_mel_discriminator['nfilter'] = [md//4, 2 * md//4, 4 * md//4, 8 * md//4, 16 * md//4]
+params_mel_discriminator['shape'] = [[5, 5], [5, 5], [5, 5], [5, 5], [5, 5]]
+params_mel_discriminator['data_size'] = 2
+
 params_generator = dict()
 params_generator['stride'] = [2, 2, 2, 2, 2]
-params_generator['nfilter'] = [4 * md, 4 * md, 2 * md, md, 1]
-params_generator['shape'] = [5, 5, 7, 7, 7]
-params_generator['padding'] = [2, 2, 3, 3, 3]
-# params_generator['residual_blocks'] = 2
+params_generator['nfilter'] = [8 * md, 4 * md, 2 * md, md, 1]
+params_generator['shape'] = [[4, 4], [4, 4], [8, 8], [8, 8], [8, 8]]
+params_generator['padding'] = [[1, 1], [1, 1], [3, 3], [3, 3], [3, 3]]
+params_generator['residual_blocks'] = 2
 
-params_generator['full'] = 256*md
+params_generator['full'] = 256 * md
 params_generator['summary'] = True
 params_generator['data_size'] = 2
-params_generator['in_conv_shape'] = [16, 4]
+params_generator['in_conv_shape'] = [16, 2]
 params_generator['borders'] = dict()
-params_generator['borders']['nfilter'] = [md, 2*md, md, md/2]
-params_generator['borders']['shape'] = [[5, 5],[5, 5],[5, 5],[5, 5]]
+params_generator['borders']['nfilter'] = [md, 2 * md, md, md / 2]
+params_generator['borders']['shape'] = [[5, 5], [5, 5], [5, 5], [5, 5]]
 params_generator['borders']['stride'] = [2, 2, 3, 4]
 params_generator['borders']['data_size'] = 2
 params_generator['borders']['border_scale'] = 2
 # This does not work because of flipping, border 2 need to be flipped tf.reverse(l, axis=[1]), ask Nathanael
 params_generator['borders']['width_full'] = None
-
 
 # Optimization parameters inspired from 'Self-Attention Generative Adversarial Networks'
 # - Spectral normalization GEN DISC
@@ -60,8 +64,8 @@ params_generator['borders']['width_full'] = None
 # - 'CGANS WITH PROJECTION DISCRIMINATOR'
 
 params_optimization = dict()
-params_optimization['batch_size'] = 64*2
-params_discriminator['batch_size'] = 64*2
+params_optimization['batch_size'] = 64
+params_discriminator['batch_size'] = 64
 
 params_optimization['n_critic'] = 1
 params_optimization['generator'] = dict()
@@ -79,7 +83,7 @@ params['net'] = dict()  # All the parameters for the model
 params['net']['generator'] = params_generator
 params['net']['discriminator'] = params_discriminator
 params['net']['prior_distribution'] = 'gaussian'
-params['net']['shape'] = [1, 512, 1024]  # Shape of the image
+params['net']['shape'] = [1, 512, 512]  # Shape of the image
 params['net']['inpainting'] = dict()
 params['net']['inpainting']['split'] = signal_split
 params['net']['gamma_gp'] = 10  # Gradient penalty
@@ -98,17 +102,17 @@ args['generator'] = params_generator
 args['discriminator_count'] = 4
 args['discriminator'] = params_discriminator
 args['borderEncoder'] = params_generator['borders']
-args['discriminator_in_shape'] = [1, 512, 128]
-args['generator_input'] = 1980
+args['discriminator_in_shape'] = [1, 512, 64]
+args['generator_input'] = 1188
 args['optimizer'] = params_optimization
 args['split'] = signal_split
-args['log_interval'] = 50
+args['log_interval'] = 100
 args['spectrogram_shape'] = params['net']['shape']
 args['gamma_gp'] = params['net']['gamma_gp']
-args['tensorboard_interval'] = 250
+args['tensorboard_interval'] = 100
 args['save_path'] = 'saved_results/'
-args['experiment_name'] = 'pytorch_nc1_largerContext'
-args['save_interval'] = 1000
+args['experiment_name'] = 'test'
+args['save_interval'] = 50000
 
 args['fft_length'] = 1024
 args['fft_hop_size'] = 256
@@ -116,15 +120,17 @@ args['sampling_rate'] = 22050
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-examples_per_file = 16
+examples_per_file = 32
 audioLoader = AudioLoader(args['sampling_rate'], args['fft_length'], args['fft_hop_size'], 50)
 
 dataFolder = "../../../Datasets/maestro-v2.0.0/"
 
-trainDataset = TrainDataset(dataFolder, window_size=1024, audio_loader=audioLoader, examples_per_file=examples_per_file)
+trainDataset = TrainDataset(dataFolder, window_size=512, audio_loader=audioLoader, examples_per_file=examples_per_file,
+                            loaded_files_buffer=20, file_usages=30)
 
 train_loader = torch.utils.data.DataLoader(trainDataset,
-    batch_size=args['optimizer']['batch_size']//examples_per_file, shuffle=True,
+                                           batch_size=args['optimizer']['batch_size'] // examples_per_file,
+                                           shuffle=True,
                                            num_workers=4, drop_last=True)
 
 start_at_step = 0
