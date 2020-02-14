@@ -95,7 +95,7 @@ class GANSystem(object):
 						start = int((time_axis - (time_axis // (2**(len(self.discriminators)-1))) * scale) / 2)
 						end = time_axis - start
 						x_fake = self.time_average(fake_spectrograms[:, :, :, start:end], scale).detach()
-						x_real = self.time_average(real_spectrograms[:, :, :, start:end, scale).detach()
+						x_real = self.time_average(real_spectrograms[:, :, :, start:end], scale).detach()
 
 						d_loss_f = discriminator(x_fake).mean()
 						d_loss_r = discriminator(x_real).mean()
@@ -130,7 +130,7 @@ class GANSystem(object):
 					time_axis = self.args['spectrogram_shape'][2]
 					start = int((time_axis - (time_axis // (2**(len(self.discriminators)-1))) * scale) / 2)
 					end = time_axis - start
-					x_fake = self.time_average(fake_spectrograms[:, :, :, start:end, scale)
+					x_fake = self.time_average(fake_spectrograms[:, :, :, start:end], scale)
 
 					d_loss_f = discriminator(x_fake)
 					gen_loss += - d_loss_f.mean()
