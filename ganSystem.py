@@ -95,7 +95,6 @@ class GANSystem(object):
 				fake_left_borders = data[1::2, :, :, :self.args['split'][0]]
 				fake_right_borders = data[1::2, :, :, self.args['split'][0] + self.args['split'][1]:]
 
-
 				encoded_left_border = self.left_border_encoder(fake_left_borders)
 				encoded_right_border = self.right_border_encoder(fake_right_borders)
 				encoded_size = encoded_left_border.size()
@@ -134,33 +133,32 @@ class GANSystem(object):
 						optim_d.step()
 
 					# optimize mel_D
-					for _ in range(self.args['optimizer']['n_critic']):
-						for index, (discriminator, optim_d) in enumerate(
-								zip(self.mel_discriminators, self.mel_optims_d), self.args['mel_discriminator_start_powscale']):
-							optim_d.zero_grad()
-							scale = 2 ** index
-							signal_length = self.args['spectrogram_shape'][2]
-							gap_length = self.args['split'][1]
-							start = int(signal_length // 2 - (gap_length // 2) * scale)
-							end = signal_length - start
+					for index, (discriminator, optim_d) in enumerate(
+							zip(self.mel_discriminators, self.mel_optims_d), self.args['mel_discriminator_start_powscale']):
+						optim_d.zero_grad()
+						scale = 2 ** index
+						signal_length = self.args['spectrogram_shape'][2]
+						gap_length = self.args['split'][1]
+						start = int(signal_length // 2 - (gap_length // 2) * scale)
+						end = signal_length - start
 
-							x_fake = self.time_average(self.mel_spectrogram(fake_spectrograms[:, :, :, start:end]), scale).detach()
-							x_real = self.time_average(self.mel_spectrogram(real_spectrograms[:, :, :, start:end]), scale).detach()
+						x_fake = self.time_average(self.mel_spectrogram(fake_spectrograms[:, :, :, start:end]), scale).detach()
+						x_real = self.time_average(self.mel_spectrogram(real_spectrograms[:, :, :, start:end]), scale).detach()
 
-							d_loss_f = discriminator(x_fake).mean()
-							d_loss_r = discriminator(x_real).mean()
+						d_loss_f = discriminator(x_fake).mean()
+						d_loss_r = discriminator(x_real).mean()
 
-							grad_pen = calc_gradient_penalty_bayes(discriminator, x_real, x_fake, self.args['gamma_gp'])
-							d_loss_gp = grad_pen.mean()
-							disc_loss = d_loss_f - d_loss_r + d_loss_gp
+						grad_pen = calc_gradient_penalty_bayes(discriminator, x_real, x_fake, self.args['gamma_gp'])
+						d_loss_gp = grad_pen.mean()
+						disc_loss = d_loss_f - d_loss_r + d_loss_gp
 
-							self.summarizer.trackScalar("Disc{:1d}/Loss".format(int(index)), disc_loss)
-							self.summarizer.trackScalar("Disc{:1d}/GradPen".format(int(index)), d_loss_gp)
-							self.summarizer.trackScalar("Disc{:1d}/Loss_f".format(int(index)), d_loss_f)
-							self.summarizer.trackScalar("Disc{:1d}/Loss_r".format(int(index)), d_loss_r)
+						self.summarizer.trackScalar("Disc{:1d}/Loss".format(int(index)), disc_loss)
+						self.summarizer.trackScalar("Disc{:1d}/GradPen".format(int(index)), d_loss_gp)
+						self.summarizer.trackScalar("Disc{:1d}/Loss_f".format(int(index)), d_loss_f)
+						self.summarizer.trackScalar("Disc{:1d}/Loss_r".format(int(index)), d_loss_r)
 
-							disc_loss.backward()
-							optim_d.step()
+						disc_loss.backward()
+						optim_d.step()
 
 				# optimize G
 
