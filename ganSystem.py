@@ -80,7 +80,7 @@ class GANSystem(object):
                                       inv_log_spectrogram(25 * (spectrogram - 1)))
         melspectrogram = torch.abs(melspectrogram)  # for safety
         minimum_relative_amplitude = torch.max(melspectrogram) / 10 ** (dynamic_range_dB / 10)
-        logMelSpectrogram = 10 * torch.log10(torch.clamp(melspectrogram, min=minimum_relative_amplitude, max=None))
+        logMelSpectrogram = 10 * torch.log10(torch.clamp(melspectrogram, min=minimum_relative_amplitude.data, max=None))
         logMelSpectrogram = logMelSpectrogram / (dynamic_range_dB / 2) + 1
         return logMelSpectrogram
 
