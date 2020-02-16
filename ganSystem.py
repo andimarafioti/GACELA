@@ -75,8 +75,12 @@ class GANSystem(object):
         noise = torch.rand(encoded_size[0], 4, encoded_size[2], encoded_size[3]).to(device)
         return self.generator(torch.cat((encoded_left_border, encoded_right_border, noise), 1))
 
-    def mel_spectrogram(self, spectrogram):
-        return 10*torch.log10(torch.matmul(self.mel_basis[:spectrogram.shape[0], :, :, :-1], inv_log_spectrogram(25 * (spectrogram - 1))))
+    def mel_spectrogram(self, spectrogram, dynamic_range_dB=50):
+        melspectrogram = torch.matmul(self.mel_basis[:spectrogram.shape[0], :, :, :-1],
+                                      inv_log_spectrogram(25 * (spectrogram - 1)))
+        logMelSpectrogram = log_spectrogram(melspectrogram, dynamic_range_dB=dynamic_range_dB)
+        logMelSpectrogram = logMelSpectrogram / (dynamic_range_dB / 2) + 1
+        return logMelSpectrogram
 
     def train(self, train_loader, epoch, batch_idx=0):
         self.summarizer = TensorboardSummarizer(self.args['save_path'] + self.args['experiment_name'] + '_summary',
