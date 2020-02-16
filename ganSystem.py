@@ -78,7 +78,9 @@ class GANSystem(object):
     def mel_spectrogram(self, spectrogram, dynamic_range_dB=50):
         melspectrogram = torch.matmul(self.mel_basis[:spectrogram.shape[0], :, :, :-1],
                                       inv_log_spectrogram(25 * (spectrogram - 1)))
-        logMelSpectrogram = log_spectrogram(melspectrogram, dynamic_range_dB=dynamic_range_dB)
+        melspectrogram = torch.abs(melspectrogram)  # for safety
+        minimum_relative_amplitude = torch.max(melspectrogram) / 10 ** (dynamic_range_dB / 10)
+        logMelSpectrogram = 10 * torch.log10(torch.clamp(melspectrogram, min=minimum_relative_amplitude, max=None))
         logMelSpectrogram = logMelSpectrogram / (dynamic_range_dB / 2) + 1
         return logMelSpectrogram
 
