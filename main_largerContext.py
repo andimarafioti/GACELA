@@ -17,14 +17,14 @@ logging.getLogger().addHandler(console_handler)
 
 __author__ = 'Andres'
 
-signal_split = [224, 64, 224]
+signal_split = [480, 64, 480]
 md = 32
 
-params_discriminator = dict()
-params_discriminator['stride'] = [2, 2, 2, 2, 2]
-params_discriminator['nfilter'] = [md, 2 * md, 4 * md, 8 * md, 16 * md]
-params_discriminator['shape'] = [[5, 5], [5, 5], [5, 5], [5, 5], [5, 5]]
-params_discriminator['data_size'] = 2
+params_stft_discriminator = dict()
+params_stft_discriminator['stride'] = [2, 2, 2, 2, 2]
+params_stft_discriminator['nfilter'] = [md, 2 * md, 4 * md, 8 * md, 16 * md]
+params_stft_discriminator['shape'] = [[5, 5], [5, 5], [5, 5], [5, 5], [5, 5]]
+params_stft_discriminator['data_size'] = 2
 
 params_mel_discriminator = dict()
 params_mel_discriminator['stride'] = [2, 2, 2, 2, 2]
@@ -65,7 +65,8 @@ params_generator['borders']['width_full'] = None
 
 params_optimization = dict()
 params_optimization['batch_size'] = 64
-params_discriminator['batch_size'] = 64
+params_stft_discriminator['batch_size'] = 64
+params_mel_discriminator['batch_size'] = 64
 
 params_optimization['n_critic'] = 1
 params_optimization['generator'] = dict()
@@ -81,9 +82,10 @@ params_optimization['discriminator']['learning_rate'] = 1e-4
 params = dict()
 params['net'] = dict()  # All the parameters for the model
 params['net']['generator'] = params_generator
-params['net']['discriminator'] = params_discriminator
+params['net']['stft_discriminator'] = params_stft_discriminator
+params['net']['mel_discriminator'] = params_mel_discriminator
 params['net']['prior_distribution'] = 'gaussian'
-params['net']['shape'] = [1, 512, 512]  # Shape of the image
+params['net']['shape'] = [1, 512, 1024]  # Shape of the image
 params['net']['inpainting'] = dict()
 params['net']['inpainting']['split'] = signal_split
 params['net']['gamma_gp'] = 10  # Gradient penalty
@@ -99,19 +101,23 @@ params['save_every'] = 1000  # Save the model every ** iterations
 
 args = dict()
 args['generator'] = params_generator
-args['discriminator_count'] = 4
-args['discriminator'] = params_discriminator
+args['stft_discriminator_count'] = 2
+args['mel_discriminator_count'] = 3
+args['stft_discriminator'] = params_stft_discriminator
+args['mel_discriminator'] = params_mel_discriminator
 args['borderEncoder'] = params_generator['borders']
-args['discriminator_in_shape'] = [1, 512, 64]
-args['generator_input'] = 1188
+args['stft_discriminator_in_shape'] = [1, 512, 64]
+args['mel_discriminator_in_shape'] = [1, 80, 64]
+args['mel_discriminator_start_powscale'] = 2
+args['generator_input'] = 1980
 args['optimizer'] = params_optimization
 args['split'] = signal_split
 args['log_interval'] = 100
 args['spectrogram_shape'] = params['net']['shape']
 args['gamma_gp'] = params['net']['gamma_gp']
-args['tensorboard_interval'] = 100
+args['tensorboard_interval'] = 500
 args['save_path'] = 'saved_results/'
-args['experiment_name'] = 'test'
+args['experiment_name'] = 'wasserstein_stft_2_mel_3_melstartpow2'
 args['save_interval'] = 50000
 
 args['fft_length'] = 1024
@@ -125,7 +131,7 @@ audioLoader = AudioLoader(args['sampling_rate'], args['fft_length'], args['fft_h
 
 dataFolder = "../../../Datasets/maestro-v2.0.0/"
 
-trainDataset = TrainDataset(dataFolder, window_size=512, audio_loader=audioLoader, examples_per_file=examples_per_file,
+trainDataset = TrainDataset(dataFolder, window_size=1024, audio_loader=audioLoader, examples_per_file=examples_per_file,
                             loaded_files_buffer=20, file_usages=30)
 
 train_loader = torch.utils.data.DataLoader(trainDataset,

@@ -111,7 +111,6 @@ class TensorboardSummarizer(object):
         self._summary_writer.add_scalar("MusicAnalysis/Fake_tuning_frequency_std",
                                         np.mean(music_analysis_fake_signal[6]), global_step=batch_idx)
 
-
         real_c = consistency((real_spectrograms - 1) * 25)
         fake_c = consistency((generated_spectrograms - 1) * 25)
 
