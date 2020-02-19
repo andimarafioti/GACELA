@@ -36,16 +36,17 @@ class GANSystem(object):
 
         self.generator = Generator(args['generator'], args['generator_input']).to(device)
 
-        self.optim_g = torch.optim.Adam(list(self.generator.parameters()) + list(self.left_border_encoder.parameters()) +
-                                list(self.right_border_encoder.parameters()),
-                                lr=args['optimizer']['generator']['learning_rate'],
-                                betas=(0.5, 0.9))
+        self.optim_g = torch.optim.Adam(
+            list(self.generator.parameters()) + list(self.left_border_encoder.parameters()) +
+            list(self.right_border_encoder.parameters()),
+            lr=args['optimizer']['generator']['learning_rate'],
+            betas=(0.5, 0.9))
         self.stft_optims_d = [torch.optim.Adam(discriminator.parameters(),
-                                lr=args['optimizer']['discriminator']['learning_rate'],
-                                betas=(0.5, 0.9)) for discriminator in self.stft_discriminators]
+                                               lr=args['optimizer']['discriminator']['learning_rate'],
+                                               betas=(0.5, 0.9)) for discriminator in self.stft_discriminators]
         self.mel_optims_d = [torch.optim.Adam(discriminator.parameters(),
-                                lr=args['optimizer']['discriminator']['learning_rate'],
-                                betas=(0.5, 0.9)) for discriminator in self.mel_discriminators]
+                                              lr=args['optimizer']['discriminator']['learning_rate'],
+                                              betas=(0.5, 0.9)) for discriminator in self.mel_discriminators]
 
         self.model_saver = TorchModelSaver(args['experiment_name'], args['save_path'])
         self._spectrogramInverter = SpectrogramInverter(args['fft_length'], args['fft_hop_size'])
@@ -54,6 +55,9 @@ class GANSystem(object):
         mel_basis = np.reshape(mel_basis, (1, 1, *mel_basis.shape))
         self.mel_basis = torch.from_numpy(np.repeat(mel_basis, args['optimizer']['batch_size'], axis=0)).to(device)
 
+        self._signal_length = sum(self.args['split'])
+        self._border_count = sum(x != 0 for x in self.args['split']) - 1
+
     def initModel(self):
         self.model_saver.initModel(self)
 
@@ -61,7 +65,8 @@ class GANSystem(object):
         self.model_saver.loadModel(self, batch_idx, epoch)
 
     def time_average(self, matrix_batch, reduction_rate):
-        tmp = torch.zeros([matrix_batch.shape[0], matrix_batch.shape[1], matrix_batch.shape[2], matrix_batch.shape[3] // reduction_rate]).float().cuda()
+        tmp = torch.zeros([matrix_batch.shape[0], matrix_batch.shape[1], matrix_batch.shape[2],
+                           matrix_batch.shape[3] // reduction_rate]).float().cuda()
         for i in range(reduction_rate):
             tmp += matrix_batch[:, :, :, i::reduction_rate]
         matrix_batch = tmp / reduction_rate
@@ -84,6 +89,15 @@ class GANSystem(object):
         logMelSpectrogram = logMelSpectrogram / (dynamic_range_dB / 2) + 1
         return logMelSpectrogram
 
+    def start_end_for_scale(self, scale):
+        gap_length = self.args['split'][1]
+        start = max(int(self.args['split'][0] + gap_length // self._border_count - (gap_length // self._border_count) * scale), 0)
+        end = min(int(self._signal_length -
+            self.args['split'][2] - gap_length // self._border_count + (gap_length // self._border_count) * scale),
+                  self._signal_length)
+
+        return start, end
+
     def train(self, train_loader, epoch, batch_idx=0):
         self.summarizer = TensorboardSummarizer(self.args['save_path'] + self.args['experiment_name'] + '_summary',
                                                 self.args['tensorboard_interval'])
@@ -96,7 +110,7 @@ class GANSystem(object):
         if batch_idx == 0 and epoch == 0:
             self.initModel()
         else:
-            self.loadModel(batch_idx, epoch-1)
+            self.loadModel(batch_idx, epoch - 1)
 
         print('try')
 
@@ -118,10 +132,7 @@ class GANSystem(object):
                                                       3)
 
                         scale = 2 ** index
-                        signal_length = self.args['spectrogram_shape'][2]
-                        gap_length = self.args['split'][1]
-                        start = int(signal_length//2 - (gap_length//2) * scale)
-                        end = signal_length - start
+                        start, end = self.start_end_for_scale(scale)
                         x_fake = self.time_average(fake_spectrograms[:, :, :, start:end], scale).detach()
                         x_real = self.time_average(real_spectrograms[:, :, :, start:end], scale).detach()
 
@@ -142,20 +153,19 @@ class GANSystem(object):
 
                     # optimize mel_D
                     for index, (discriminator, optim_d) in enumerate(
-                            zip(self.mel_discriminators, self.mel_optims_d), self.args['mel_discriminator_start_powscale']):
+                            zip(self.mel_discriminators, self.mel_optims_d),
+                            self.args['mel_discriminator_start_powscale']):
                         optim_d.zero_grad()
                         generated_spectrograms = self.generateGap(fake_left_borders, fake_right_borders)
                         fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders),
                                                       3)
 
                         scale = 2 ** index
-                        signal_length = self.args['spectrogram_shape'][2]
-                        gap_length = self.args['split'][1]
-                        start = int(signal_length // 2 - (gap_length // 2) * scale)
-                        end = signal_length - start
-
-                        x_fake = self.time_average(self.mel_spectrogram(fake_spectrograms[:, :, :, start:end]), scale).detach()
-                        x_real = self.time_average(self.mel_spectrogram(real_spectrograms[:, :, :, start:end]), scale).detach()
+                        start, end = self.start_end_for_scale(scale)
+                        x_fake = self.time_average(self.mel_spectrogram(fake_spectrograms[:, :, :, start:end]),
+                                                   scale).detach()
+                        x_real = self.time_average(self.mel_spectrogram(real_spectrograms[:, :, :, start:end]),
+                                                   scale).detach()
 
                         d_loss_f = discriminator(x_fake).mean()
                         d_loss_r = discriminator(x_real).mean()
@@ -183,10 +193,7 @@ class GANSystem(object):
                     fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
 
                     scale = 2 ** index
-                    signal_length = self.args['spectrogram_shape'][2]
-                    gap_length = self.args['split'][1]
-                    start = int(signal_length // 2 - (gap_length // 2) * scale)
-                    end = signal_length - start
+                    start, end = self.start_end_for_scale(scale)
                     x_fake = self.time_average(fake_spectrograms[:, :, :, start:end], scale)
 
                     d_loss_f = discriminator(x_fake).mean()
@@ -198,11 +205,7 @@ class GANSystem(object):
                     fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
 
                     scale = 2 ** index
-                    signal_length = self.args['spectrogram_shape'][2]
-                    gap_length = self.args['split'][1]
-                    start = int(signal_length // 2 - (gap_length // 2) * scale)
-                    end = signal_length - start
-
+                    start, end = self.start_end_for_scale(scale)
                     x_fake = self.time_average(self.mel_spectrogram(fake_spectrograms[:, :, :, start:end]),
                                                scale)
 
@@ -217,16 +220,19 @@ class GANSystem(object):
                 if batch_idx % self.args['log_interval'] == 0:
                     self.consoleSummarizer.printSummary(batch_idx, epoch)
                 if batch_idx % self.args['tensorboard_interval'] == 0:
-                    unprocessed_fake_spectrograms = inv_log_spectrogram(25 * (fake_spectrograms[:8]-1)).detach().cpu().numpy().squeeze()
+                    unprocessed_fake_spectrograms = inv_log_spectrogram(
+                        25 * (fake_spectrograms[:8] - 1)).detach().cpu().numpy().squeeze()
                     fake_sounds = self._spectrogramInverter.invertSpectrograms(unprocessed_fake_spectrograms)
-                    real_sounds = self._spectrogramInverter.invertSpectrograms(inv_log_spectrogram(25 * (real_spectrograms[:8] - 1)).detach().cpu().numpy().squeeze())
+                    real_sounds = self._spectrogramInverter.invertSpectrograms(
+                        inv_log_spectrogram(25 * (real_spectrograms[:8] - 1)).detach().cpu().numpy().squeeze())
 
                     self.summarizer.trackScalar("Gen/Projection_loss", torch.from_numpy(
                         self._spectrogramInverter.projectionLossBetween(unprocessed_fake_spectrograms,
                                                                         fake_sounds)
                         * self.args['tensorboard_interval']))
 
-                    self.summarizer.writeSummary(batch_idx, real_spectrograms, generated_spectrograms, fake_spectrograms,
+                    self.summarizer.writeSummary(batch_idx, real_spectrograms, generated_spectrograms,
+                                                 fake_spectrograms,
                                                  fake_sounds, real_sounds, self.args['sampling_rate'])
                 if batch_idx % self.args['save_interval'] == 0:
                     self.model_saver.saveModel(self, batch_idx, epoch)
@@ -234,4 +240,3 @@ class GANSystem(object):
             should_restart = False
         self.model_saver.saveModel(self, batch_idx, epoch)
         return batch_idx, should_restart
-
