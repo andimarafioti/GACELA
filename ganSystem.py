@@ -176,9 +176,6 @@ class GANSystem(object):
 
                 self.optim_g.zero_grad()
 
-                generated_spectrograms = self.generateGap(fake_left_borders, fake_right_borders)
-
-                fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
                 gen_loss = 0
 
                 for index, discriminator in enumerate(self.stft_discriminators):
