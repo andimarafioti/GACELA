@@ -69,8 +69,10 @@ class GANSystem(object):
 
     def generateGap(self, left_context, right_context):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        encoded_left_border = self.left_border_encoder(left_context)
-        encoded_right_border = self.right_border_encoder(right_context)
+        left_context_reduced = self.time_average(self.mel_spectrogram(left_context), 4)
+        right_context_reduced = self.time_average(self.mel_spectrogram(right_context), 4)
+        encoded_left_border = self.left_border_encoder(left_context_reduced)
+        encoded_right_border = self.right_border_encoder(right_context_reduced)
         encoded_size = encoded_left_border.size()
         noise = torch.rand(encoded_size[0], 4, encoded_size[2], encoded_size[3]).to(device)
         return self.generator(torch.cat((encoded_left_border, encoded_right_border, noise), 1))
