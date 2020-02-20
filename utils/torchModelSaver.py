@@ -19,7 +19,6 @@ class TorchModelSaver(object):
             'stft_discriminators': ganSystem.stft_discriminators.state_dict(),
             'mel_discriminators': ganSystem.mel_discriminators.state_dict(),
             'encoders': [encoder.state_dict() for encoder in ganSystem.border_encoders],
-            'right_encoder': ganSystem.right_border_encoder.state_dict(),
             'optim_g': ganSystem.optim_g.state_dict(),
         }
         for index, optim_d in enumerate(ganSystem.stft_optims_d):
