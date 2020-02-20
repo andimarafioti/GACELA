@@ -31,8 +31,8 @@ class GANSystem(object):
             [Discriminator(args['mel_discriminator'], args['mel_discriminator_in_shape'])
              for _ in range(args['mel_discriminator_count'])]).to(device)
 
-        self.left_border_encoder = BorderEncoder(args['borderEncoder']).to(device)
-        self.right_border_encoder = BorderEncoder(args['borderEncoder']).to(device)
+        self._border_count = sum(x != 0 for x in self.args['split']) - 1
+        self.border_encoders = [BorderEncoder(args['borderEncoder']).to(device) for border in range(self._border_count)]
 
         self.generator = Generator(args['generator'], args['generator_input']).to(device)
 
@@ -72,13 +72,12 @@ class GANSystem(object):
         matrix_batch = tmp / reduction_rate
         return matrix_batch
 
-    def generateGap(self, left_context, right_context):
+    def generateGap(self, contexts):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        encoded_left_border = self.left_border_encoder(left_context)
-        encoded_right_border = self.right_border_encoder(right_context)
-        encoded_size = encoded_left_border.size()
+        encoded_contexts = [encoder(context) for encoder, context in zip(self.border_encoders, contexts)]
+        encoded_size = encoded_contexts[0].size()
         noise = torch.rand(encoded_size[0], 4, encoded_size[2], encoded_size[3]).to(device)
-        return self.generator(torch.cat((encoded_left_border, encoded_right_border, noise), 1))
+        return self.generator(torch.cat((*encoded_contexts, noise), 1))
 
     def mel_spectrogram(self, spectrogram, dynamic_range_dB=50):
         melspectrogram = torch.matmul(self.mel_basis[:spectrogram.shape[0], :, :, :-1],
@@ -127,7 +126,7 @@ class GANSystem(object):
                 for _ in range(self.args['optimizer']['n_critic']):
                     for index, (discriminator, optim_d) in enumerate(zip(self.stft_discriminators, self.stft_optims_d)):
                         optim_d.zero_grad()
-                        generated_spectrograms = self.generateGap(fake_left_borders, fake_right_borders)
+                        generated_spectrograms = self.generateGap([fake_left_borders, fake_right_borders])
                         fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders),
                                                       3)
 
@@ -156,7 +155,7 @@ class GANSystem(object):
                             zip(self.mel_discriminators, self.mel_optims_d),
                             self.args['mel_discriminator_start_powscale']):
                         optim_d.zero_grad()
-                        generated_spectrograms = self.generateGap(fake_left_borders, fake_right_borders)
+                        generated_spectrograms = self.generateGap([fake_left_borders, fake_right_borders])
                         fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders),
                                                       3)
 
@@ -189,7 +188,7 @@ class GANSystem(object):
                 gen_loss = 0
 
                 for index, discriminator in enumerate(self.stft_discriminators):
-                    generated_spectrograms = self.generateGap(fake_left_borders, fake_right_borders)
+                    generated_spectrograms = self.generateGap([fake_left_borders, fake_right_borders])
                     fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
 
                     scale = 2 ** index
@@ -201,7 +200,7 @@ class GANSystem(object):
 
                 for index, discriminator in enumerate(
                         self.mel_discriminators, self.args['mel_discriminator_start_powscale']):
-                    generated_spectrograms = self.generateGap(fake_left_borders, fake_right_borders)
+                    generated_spectrograms = self.generateGap([fake_left_borders, fake_right_borders])
                     fake_spectrograms = torch.cat((fake_left_borders, generated_spectrograms, fake_right_borders), 3)
 
                     scale = 2 ** index
