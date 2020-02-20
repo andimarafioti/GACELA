@@ -56,7 +56,6 @@ class GANSystem(object):
         self.mel_basis = torch.from_numpy(np.repeat(mel_basis, args['optimizer']['batch_size'], axis=0)).to(device)
 
         self._signal_length = sum(self.args['split'])
-        self._border_count = sum(x != 0 for x in self.args['split']) - 1
 
     def initModel(self):
         self.model_saver.initModel(self)
@@ -74,7 +73,8 @@ class GANSystem(object):
 
     def generateGap(self, contexts):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        encoded_contexts = [encoder(context) for encoder, context in zip(self.border_encoders, contexts)]
+        encoded_contexts = [encoder(self.time_average(self.mel_spectrogram(context), 4)) for encoder, context in
+                            zip(self.border_encoders, contexts)]
         encoded_size = encoded_contexts[0].size()
         noise = torch.rand(encoded_size[0], 4, encoded_size[2], encoded_size[3]).to(device)
         return self.generator(torch.cat((*encoded_contexts, noise), 1))

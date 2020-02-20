@@ -48,9 +48,8 @@ class Generator(nn.Module):
                 nn.ReLU(),
             ))
             curr_channel_count = nfilters
-
-        for _ in range(self._params['residual_blocks']):
-            self.convGenerator.append(ResidualLayer(curr_channel_count))
+            for _ in range(self._params['residual_blocks']):
+                self.convGenerator.append(ResidualLayer(curr_channel_count))
 
         self.convGenerator.append(nn.Sequential(
             nn.ConvTranspose2d(in_channels=curr_channel_count, out_channels=self._params['nfilter'][-1],
