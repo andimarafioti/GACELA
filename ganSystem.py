@@ -36,8 +36,9 @@ class GANSystem(object):
 
         self.generator = Generator(args['generator'], args['generator_input']).to(device)
 
-        self.optim_g = torch.optim.Adam(
-            list(self.generator.parameters()) + [list(encoder.parameters()) for encoder in self.border_encoders],
+        generator_params = list(self.generator.parameters())
+        [generator_params.extend(list(encoder.parameters())) for encoder in self.border_encoders]
+        self.optim_g = torch.optim.Adam(generator_params,
             lr=args['optimizer']['generator']['learning_rate'],
             betas=(0.5, 0.9))
         self.stft_optims_d = [torch.optim.Adam(discriminator.parameters(),
