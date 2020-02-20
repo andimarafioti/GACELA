@@ -18,7 +18,7 @@ class TorchModelSaver(object):
             'generator': ganSystem.generator.state_dict(),
             'stft_discriminators': ganSystem.stft_discriminators.state_dict(),
             'mel_discriminators': ganSystem.mel_discriminators.state_dict(),
-            'left_encoder': ganSystem.left_border_encoder.state_dict(),
+            'encoders': [encoder.state_dict() for encoder in ganSystem.border_encoders],
             'right_encoder': ganSystem.right_border_encoder.state_dict(),
             'optim_g': ganSystem.optim_g.state_dict(),
         }
@@ -35,8 +35,7 @@ class TorchModelSaver(object):
         ganSystem.generator.load_state_dict(checkpoint['generator'])
         ganSystem.stft_discriminators.load_state_dict(checkpoint['stft_discriminators'])
         ganSystem.mel_discriminators.load_state_dict(checkpoint['mel_discriminators'])
-        ganSystem.left_border_encoder.load_state_dict(checkpoint['left_encoder'])
-        ganSystem.right_border_encoder.load_state_dict(checkpoint['right_encoder'])
+        [encoder.load_state_dict(encoder_dict) for encoder, encoder_dict in zip(ganSystem.border_encoders, checkpoint['encoders'])]
         ganSystem.optim_g.load_state_dict(checkpoint['optim_g'])
 
         for index, optim_d in enumerate(ganSystem.stft_optims_d):
@@ -44,22 +43,20 @@ class TorchModelSaver(object):
         for index, optim_d in enumerate(ganSystem.mel_optims_d):
             optim_d.load_state_dict(checkpoint['mel_optims_d' + str(index)])
 
-    def loadGenerator(self, generator, left_border_encoder, right_border_encoder, batch_idx, epoch):
+    def loadGenerator(self, generator, encoders, batch_idx, epoch):
         load_path = os.path.join(self._save_path + self._experiment_name + '_checkpoints', '%02d_%04d.pt' % (epoch, batch_idx))
         checkpoint = torch.load(load_path)
 
         generator.load_state_dict(checkpoint['generator'])
-        left_border_encoder.load_state_dict(checkpoint['left_encoder'])
-        right_border_encoder.load_state_dict(checkpoint['right_encoder'])
+        [encoder.load_state_dict(encoder_dict) for encoder, encoder_dict in zip(encoders, checkpoint['encoders'])]
 
-        return generator, left_border_encoder, right_border_encoder
+        return generator, encoders
 
     def initModel(self, ganSystem):
         self.makeFolder()
         ganSystem.stft_discriminators.apply(init_weights)
         ganSystem.mel_discriminators.apply(init_weights)
-        ganSystem.left_border_encoder.apply(init_weights)
-        ganSystem.right_border_encoder.apply(init_weights)
+        [encoder.apply(init_weights) for encoder in ganSystem.border_encoders]
         ganSystem.generator.apply(init_weights)
 
     def makeFolder(self):
