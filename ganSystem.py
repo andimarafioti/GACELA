@@ -64,8 +64,9 @@ class GANSystem(object):
         self.model_saver.loadModel(self, batch_idx, epoch)
 
     def time_average(self, matrix_batch, reduction_rate):
+		device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         tmp = torch.zeros([matrix_batch.shape[0], matrix_batch.shape[1], matrix_batch.shape[2],
-                           matrix_batch.shape[3] // reduction_rate]).float().cuda()
+                           matrix_batch.shape[3] // reduction_rate]).float().to(device)
         for i in range(reduction_rate):
             tmp += matrix_batch[:, :, :, i::reduction_rate]
         matrix_batch = tmp / reduction_rate
