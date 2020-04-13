@@ -54,7 +54,7 @@ class BaseDataset(data.Dataset):
 
     def _usedFilename(self, filename):
         self._loaded_files[filename][0] = self._loaded_files[filename][0] + 1
-        if self._loaded_files[filename][0] > self._file_usages:
+        if self._loaded_files[filename][0] >= self._file_usages:
             del self._loaded_files[filename]
             Worker.call(self._loadNewFile).asDaemon.start()
 
