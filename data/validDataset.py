@@ -10,7 +10,6 @@ class ValidDataset(BaseDataset):
 
     def _saveNewFile(self, name, audio, spectrogram):
         self._loaded_files[name] = [0, spectrogram, audio]
-        self._index += 1
 
     def __getitem__(self, unused_index):
         filename = self._selectFile()
