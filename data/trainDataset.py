@@ -8,7 +8,6 @@ __author__ = 'Andres'
 class TrainDataset(BaseDataset):
     def _saveNewFile(self, name, audio, spectrogram):
         self._loaded_files[name] = [0, spectrogram]
-        self._index += 1
 
     def _sliceAudio(self, audio):
         return audio[:int(0.8*audio.shape[0])]
