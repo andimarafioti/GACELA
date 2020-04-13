@@ -14,6 +14,7 @@ class ValidDataset(BaseDataset):
     def __getitem__(self, unused_index):
         filename = self._selectFile()
         spectrogram, audio = self._loaded_files[filename][1], self._loaded_files[filename][2]
+        self._usedFilename(filename)
 
         starts = np.random.randint(0, spectrogram.shape[1] - self._window_size, self._examples_per_file)
 
@@ -25,6 +26,5 @@ class ValidDataset(BaseDataset):
             spectrograms[index] = spectrogram[:, start:start + self._window_size]
             audio_start = np.min([start*self._audio_loader.hopSize(), audio.shape[0]-audio_length])
             audios[index] = audio[audio_start:audio_start+audio_length]
-        self._usedFilename(filename)
 
         return spectrograms[:, :-1], audios
