@@ -15,6 +15,7 @@ class TrainDataset(BaseDataset):
     def __getitem__(self, unused_index):
         filename = self._selectFile()
         spectrogram = self._loaded_files[filename][1]
+        self._usedFilename(filename)
 
         starts = np.random.randint(0, spectrogram.shape[1] - self._window_size, self._examples_per_file)
 
@@ -23,7 +24,6 @@ class TrainDataset(BaseDataset):
         for index, start in enumerate(starts):
             spectrograms[index] = spectrogram[:, start:start + self._window_size]
 
-        self._usedFilename(filename)
 
         return spectrograms[:, :-1]
 
