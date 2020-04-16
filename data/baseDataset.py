@@ -40,11 +40,12 @@ class BaseDataset(data.Dataset):
 
     def _loadNewFile(self):
         name = self.filenames[self._index % len(self.filenames)]
+        self._index += 1
         audio = self._audio_loader.loadSound(name)
         audio = self._sliceAudio(audio)
         spectrogram = self._audio_loader.computeSpectrogram(audio)
         if spectrogram.shape[1] <= self._window_size:
-            self._index += 1
+            self._loadNewFile()
             return
         self._saveNewFile(name, audio, spectrogram)
 
@@ -53,7 +54,7 @@ class BaseDataset(data.Dataset):
 
     def _usedFilename(self, filename):
         self._loaded_files[filename][0] = self._loaded_files[filename][0] + 1
-        if self._loaded_files[filename][0] > self._file_usages:
+        if self._loaded_files[filename][0] >= self._file_usages:
             del self._loaded_files[filename]
             Worker.call(self._loadNewFile).asDaemon.start()
 
