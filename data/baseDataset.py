@@ -23,7 +23,7 @@ class BaseDataset(data.Dataset):
         self._index = 0
         self.filenames = []
         for ext in ['*.wav', '*.mp3']:
-           self.filenames.extend([filename for filename in Path(dataFolder).rglob(ext)])
+           self.filenames.extend([filename for filename in Path(root).rglob(ext)])
 
         for pattern in blacklist_patterns:
             self.filenames = self.blacklist(self.filenames, pattern)
