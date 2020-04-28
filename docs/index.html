@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<title>TiFGAN</title>
+<title>A context encoder for audio inpainting of long gaps</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="w3.css">
@@ -18,7 +18,7 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 <div class="w3-top">
   <div class="w3-bar w3-pale-red w3-card w3-left-align w3-large">
     <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-red" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
-    <a href="#" class="w3-bar-item w3-button w3-padding-large w3-white">TiFGAN</a>
+    <a href="#" class="w3-bar-item w3-button w3-padding-large w3-white">The system</a>
     <a href="#S-E" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Sound examples</a>
     <a href="#P-E" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Phase examples</a>
   </div>
@@ -32,9 +32,9 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 
 <!-- Header -->
 <header class="w3-container w3-pale-red w3-center" style="padding:128px 16px">
-  <h1 class="w3-margin w3-jumbo">TiFGAN</h1>
+  <h1 class="w3-margin w3-jumbo">A context encoder for audio inpainting of long gaps</h1>
     <h5 class="w3-xlarge">This website accompanies the work presented as a <a href="https://www.researchgate.net/publication/link" target="_blank">pre-print here</a>.</h5>
-    <h5 class="w3-xlarge">The code used can be found <a href="https://github.com/tifgan/stftGAN" target="_blank">here</a>. <a href="https://github.com/tifgan/stftGAN" target="_blank" class="fa fa-github w3-hover-opacity"></a></h5>
+    <h5 class="w3-xlarge">The code used can be found <a href="https://github.com/andimarafioti/GANinpainting" target="_blank">here</a>. <a href="https://github.com/andimarafioti/GANinpainting" target="_blank" class="fa fa-github w3-hover-opacity"></a></h5>
 </header>
 
 <!-- First Grid -->
@@ -46,14 +46,13 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
       </h5>
 
 
-      <h1><img src="images/tfgan3.png" alt="Change in distributions from spectrogram to log-spectrogam" width=100%></h1>
-
+      <h1><img src="images/audio-inpainting.png" alt="Change in distributions from spectrogram to log-spectrogam" width=100%></h1>
 
       <h5 class="w3-padding-32">
 The general architecture for TiFGAN is depicted above. For the purpose of this contribution, we restrict to generating 1 second of audio data, sampled at 16kHz. For the short-time Fourier transform, we chose for the analysis window a (sampled) Gaussian and fix the minimal redundancy that we consider reliable, i.e., M/a = 4 and select a=128, M=512. Since the Nyquist frequency is not expected to hold significant information for the considered signals, we drop it to arrive at a representation size of 256x128, which is well suited to processing using strided convolutions. For the reconstruction of the phase we use phase-gradient heap integration (PGHI) (see <a href="https://ieeexplore.ieee.org/document/7890450" target="_blank">Prusa et Al</a>) which requires no iteration, such that reconstruction time is comparable to simply integrating the phase derivatives. For synthesis from the STFT, we use the canonical dual window, precomputed using the Large Time-Frequency Analysis Toolbox (<a href="http://ltfat.github.io/" target="_blank">LTFAT</a>).
 </h5>
 
-      <h1><img src="images/distributions.png" alt="Change in distributions from spectrogram to log-spectrogam" width=100%></h1>
+      <h1><img src="images/audio-inpainting-gan.png" alt="Change in distributions from spectrogram to log-spectrogam" width=100%></h1>
 
       <h5 class="w3-padding-32">
 <p>Since the distribution of values in the magnitude of the Short-Time Fourier Transform (STFT) is not well suited for a GAN (see  Figure above) we use log-magnitude coefficients. We first normalize the STFT magnitude to have maximum value 1, such that the log-magnitude is confined in (-inf, 0]. Then, the dynamic range of the log-magnitude is limited by clipping at -r (in our experiments r=10), before scaling and shifting to the range of the generator output [-1,1], i.e. dividing by r/2 before adding constant 1.
