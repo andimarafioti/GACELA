@@ -20,7 +20,7 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
     <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-red" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
     <a href="#" class="w3-bar-item w3-button w3-padding-large w3-white">The system</a>
     <a href="#S-E" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Sound examples</a>
-    <a href="#P-E" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Phase examples</a>
+    <a href="#SGA" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Comparison SGA</a>
   </div>
 
   <!-- Navbar on small screens -->
@@ -149,59 +149,65 @@ The network trained to generate log-magnitudes will be referred to as TiFGAN-M. 
 </div>
 
 <!-- Third Grid -->
-<div id="P-E" class="w3-row-padding w3-padding-64 w3-container">
+<div id="SGA" class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
     <div class="w3-twothird">
-      <h1>Different phase recovery strategies</h1>
+      <h1>Comparison to the similarity graph algorithm (SGA)</h1>
 
-        <h1><img src="images/sines_phases.png" alt="Trumpet" width=90%></h1>
-         <h6>Overview of spectral changes resulting from different phase reconstruction methods. (1) Original log-magnitude, (2-4) log-magnitude differences between original and signals restored with (2) cumulative sum along channels (initialized with zeros), (3) PGHI from phase derivatives (4) PGHI from magnitude only and phase estimated from the phase-magnitude relations.</h6>
+      <div class="w3-center ">
+        <h1><img src="images/SGA.png" alt="Trumpet" width=50%></h1>
+      </div>
 
-         <h5>
-         <p>It may seem straightforward to restore the phase from its time-direction derivative by summation along frequency channels as proposed by <a href="https://openreview.net/pdf?id=H1xQVn09FX" target="_blank">Engel et Al<a>. Even on real, unmodified STFTs, the resulting phase misalignment introduces cancellation between frequency bands resulting in energy loss, see Figure above (2) for a simple example. In practice, such cancellations often leads to clearly perceptible changes of timbre (see below). Moreover, in areas of small STFT magnitude, the phase is known to be unreliable (see <a href="https://arxiv.org/abs/1103.0409" target="_blank">Balazs et Al</a>) and highly sensitive to distortions (see <a href="https://arxiv.org/abs/1901.05296" target="_blank">Alaifari et Al</a>), such that it cannot be reliably modelled and synthesis from generated phase derivatives is likely to introduce more distortion.
-         </p>
-         <p>Phase-gradient heap integration (PGHI) (see <a href="https://ieeexplore.ieee.org/document/7890450" target="_blank">Prusa et Al</a>) relies on the phase-magnitude relations and bypasses phase instabilities by avoiding integration through areas of small magnitude, leading to significantly better and more robust phase estimates see Figure above (4). PGHI often outperforms more expensive, iterative schemes relying on alternate projection, e.g., Griffin-Lim, at the phaseless reconstruction (PLR) task.
-         </p>
-         <p>The following examples were computed on samples from the <a href="https://tech.ebu.ch/publications/sqamcd" target="_blank">EBU SQAM dataset</a>.
-         </p>
-         </h5>
-
-            <ul style="list-style-type:none">
-                <li><audio controls>
-                    <source src="audio_examples/phase/49_femaleeng_ORG.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                    </audio> Original
-                </li>
-
-                <li><audio controls>
-                    <source src="audio_examples/phase/49_femaleeng_TDERIV.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                    </audio> Phase from the time-direction derivative
-                </li>
-                <li><audio controls>
-                    <source src="audio_examples/phase/49_femaleeng_PGHI.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                    </audio> Phase from PGHI
-                </li>
-            </ul>
+         <h5>While SGA is, to the best of our knowledge, the only method that has been systematically evaluated on missing segments of similar duration, the different conditions for SGA and our network do not allow for a meaningful performance comparison, as we would do obtain from a listening test. There are conditions for which SGA is almost the optimal solution: A localized corruption on a song with lots of repetition, where the solution does not need to be computed quickly and extending the total length of the song is not a problem. In that setting, SGA attempts to automate what a trained technician would do. There are other conditions where SGA can not be applied and our method can such as signals that present repetitive corruptions in intervals, where a longer context is not available, or where the signal present little repetition. Nevertheless, we applied our method trained on fma-rock to the rock songs used for the listening tests in Perraudin et Al (2016).</h5>
 
 
             <ul style="list-style-type:none">
                 <li><audio controls>
-                    <source src="audio_examples/phase/50_maleeng_ORG.flac" type="audio/mpeg">
+                    <source src="audio/SGA/1.flac" type="audio/mpeg">
                     Your browser does not support the audio element.
-                    </audio> Original (2)
+                    </audio>
                 </li>
 
                 <li><audio controls>
-                    <source src="audio_examples/phase/50_maleeng_TDERIV.flac" type="audio/mpeg">
+                    <source src="audio/SGA/2.flac" type="audio/mpeg">
                     Your browser does not support the audio element.
-                    </audio> Phase from the time-direction derivative (2)
+                    </audio>
                 </li>
                 <li><audio controls>
-                    <source src="audio_examples/phase/50_maleeng_PGHI.flac" type="audio/mpeg">
+                    <source src="audio/SGA/3.flac" type="audio/mpeg">
                     Your browser does not support the audio element.
-                    </audio> Phase from PGHI (2)
+                    </audio>
+                </li>
+                <li><audio controls>
+                    <source src="audio/SGA/4.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio>
+                </li>
+
+                <li><audio controls>
+                    <source src="audio/SGA/5.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio>
+                </li>
+                <li><audio controls>
+                    <source src="audio/SGA/6.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio>
+                </li>
+                <li><audio controls>
+                    <source src="audio/SGA/7.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio>
+                </li>
+                <li><audio controls>
+                    <source src="audio/SGA/8.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio>
+                </li>
+                <li><audio controls>
+                    <source src="audio/SGA/9.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio>
                 </li>
             </ul>
 
