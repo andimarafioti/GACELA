@@ -19,14 +19,14 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
   <div class="w3-bar w3-pale-red w3-card w3-left-align w3-large">
     <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-red" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
     <a href="#" class="w3-bar-item w3-button w3-padding-large w3-white">The system</a>
-    <a href="#S-E" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Sound examples</a>
+    <a href="#S-E" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Latent variable</a>
     <a href="#SGA" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Comparison SGA</a>
   </div>
 
   <!-- Navbar on small screens -->
   <div id="navDemo" class="w3-bar-block w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
-    <a href="#S-E" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Sound examples</a>
-    <a href="#P-E" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Phase examples</a>
+    <a href="#S-E" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Latent variable</a>
+    <a href="#P-E" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Comparison SGA</a>
   </div>
 </div>
 
@@ -72,74 +72,125 @@ The network trained to generate log-magnitudes will be referred to as TiFGAN-M. 
   <div class="w3-content">
 
     <div class="w3-twothird">
-      <h1>Sound examples</h1>
-        <h5>Results obtained training on a speech dataset obtained as a subset of spoken digits "zero" through "nine" (sc09) from the <a href="https://ai.googleblog.com/2017/08/launching-speech-commands-dataset.html" target="_blank">"Speech Commands Dataset"</a>. The dataset is not curated, some samples are noisy or poorly labeled, the considered subset consists of approximately 23,000 samples.</h5>
+      <h1> How is the input distribution affecting the results?</h1>
+        <h5>Music inpainting in the range between tens of milliseconds and hundreds of milliseconds is a multi-modal task with no \emph{unique} plausible solution. We designed our context encoder to be able to model this behaviour. To model the multi-modal task during training, we use a GAN architecture. To model the multi-modal task after training, we condition the generator not only on the encoded context, but also on the latent variable, a random variable drawn from a uniform distribution. We expect different realizations of the random variable to output different solutions for the task. However, this might not be the case as it has been reported that GANs with very strong conditioning information do not rely heavily on the additional noise input distribution \cite{MathieuCL15, isola2017image, MelGAN-2019}. In order to evaluate if the generator changes it's output depending on the latent variable, we generate several different outputs keeping the context fix and changing the latent variable and we evaluate the outputs.
+        </h5>
+
+        <div class="w3-center ">
+          <h1><img src="images/examples_latent_variable.png" alt="Trumpet" width=50%></h1>
+        </div>
 
             <ul style="list-style-type:none">
                 <li>
                    <audio controls>
-                    <source src="audio_examples/trained/commands-original.flac" type="audio/mpeg">
+                    <source src="audio/latent variable/gap-0.flac" type="audio/mpeg">
                     Your browser does not support the audio element.
-                    </audio> Original
+                  </audio> Gap 1A
                 </li>
-
-                <li><audio controls>
-                    <source src="audio_examples/trained/commands-TFGAN-M.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                    </audio> TFGAN-M
-                </li>
-                <li><audio controls>
-                    <source src="audio_examples/trained/commands-TFGAN-MTF.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                    </audio> TFGAN-MTF
-                </li>
-                <li><audio controls>
-                    <source src="audio_examples/trained/commands-wavegan.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                    </audio> WaveGAN
-                </li>
-            </ul>
-
-<div class="aligncenter" style="width:150%;height:2px;background-color:#777777;"></div>
-
-        <h5>Results obtained training on a music dataset obtained from 25 minutes of piano recordings of Bach compositions, segmented into approximately 19,000 overlapping samples of 1s duration. Provided by <a href="https://github.com/chrisdonahue/wavegan" target="_blank">Donahue et Al</a>.</h5>
-
-            <ul style="list-style-type:none">
                 <li>
                    <audio controls>
-                    <source src="audio_examples/trained/piano-original.flac" type="audio/mpeg">
+                    <source src="audio/latent variable/gap-1.flac" type="audio/mpeg">
                     Your browser does not support the audio element.
-                    </audio> Original
+                  </audio> Gap 1B
                 </li>
-
-                <li><audio controls>
-                    <source src="audio_examples/trained/piano-TFGAN-M.flac" type="audio/mpeg">
+                <li>
+                   <audio controls>
+                    <source src="audio/latent variable/gap-inContext-0.flac" type="audio/mpeg">
                     Your browser does not support the audio element.
-                    </audio> TFGAN-M
+                  </audio> Gap with context 1A
                 </li>
-                <li><audio controls>
-                    <source src="audio_examples/trained/piano-wavegan.flac" type="audio/mpeg">
+                <li>
+                   <audio controls>
+                    <source src="audio/latent variable/gap-inContext-1.flac" type="audio/mpeg">
                     Your browser does not support the audio element.
-                    </audio> WaveGAN
+                  </audio> Gap with context 1B
                 </li>
             </ul>
 
             <div class="aligncenter" style="width:150%;height:2px;background-color:#777777;"></div>
 
-        <h5>TiFGAN-M generates magnitude log-magnitude spectrograms from which we reconstruct the phase using PGHI. To test the artifacts that this pipeline might bring, we applied the same processing to the original samples.</h5>
+            <ul style="list-style-type:none">
+                <li>
+                   <audio controls>
+                    <source src="audio/latent variable/gap-9.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                  </audio> Gap 2A
+                </li>
+                <li>
+                   <audio controls>
+                    <source src="audio/latent variable/gap-10.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                  </audio> Gap 2B
+                </li>
+                <li>
+                   <audio controls>
+                    <source src="audio/latent variable/gap-inContext-9.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                  </audio> Gap with context 2A
+                </li>
+                <li>
+                   <audio controls>
+                    <source src="audio/latent variable/gap-inContext-10.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                  </audio> Gap with context 2B
+                </li>
+            </ul>
+
+            <div class="aligncenter" style="width:150%;height:2px;background-color:#777777;"></div>
 
             <ul style="list-style-type:none">
                 <li>
                    <audio controls>
-                    <source src="audio_examples/trained/piano-original_pipeline.flac" type="audio/mpeg">
+                    <source src="audio/latent variable/gap-16.flac" type="audio/mpeg">
                     Your browser does not support the audio element.
-                    </audio> Commands
+                  </audio> Gap 3A
                 </li>
-
-                <li><audio controls>
-                    <source src="audio_examples/trained/piano-original_pipeline.flac" type="audio/mpeg">
+                <li>
+                   <audio controls>
+                    <source src="audio/latent variable/gap-17.flac" type="audio/mpeg">
                     Your browser does not support the audio element.
-                    </audio> Piano
+                  </audio> Gap 3B
+                </li>
+                <li>
+                   <audio controls>
+                    <source src="audio/latent variable/gap-inContext-16.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                  </audio> Gap with context 3A
+                </li>
+                <li>
+                   <audio controls>
+                    <source src="audio/latent variable/gap-inContext-17.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                  </audio> Gap with context 3B
+                </li>
+            </ul>
+
+            <div class="aligncenter" style="width:150%;height:2px;background-color:#777777;"></div>
+
+            <ul style="list-style-type:none">
+                <li>
+                   <audio controls>
+                    <source src="audio/latent variable/gap-61.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                  </audio> Gap 4A
+                </li>
+                <li>
+                   <audio controls>
+                    <source src="audio/latent variable/gap-62.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                  </audio> Gap 4B
+                </li>
+                <li>
+                   <audio controls>
+                    <source src="audio/latent variable/gap-inContext-61.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                  </audio> Gap with context 4A
+                </li>
+                <li>
+                   <audio controls>
+                    <source src="audio/latent variable/gap-inContext-62.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                  </audio> Gap with context 4B
                 </li>
             </ul>
 
