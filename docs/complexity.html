@@ -1,0 +1,207 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Adversarial context encoder - Effect of the complexity</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="stylesheet" href="assets/css/home.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="index.html" class="logo">
+									<span class="symbol"><img src="images/logo.svg" alt="" /></span><span class="title">Home</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="index.html">Home</a></li>
+							<li><a href="general.html">The adversarial context encoder</a></li>
+							<li><a href="complexity.html">Effect of the complexity</a></li>
+							<li><a href="length.html">Effect of the gap length</a></li>
+							<li><a href="latent-variable.html">Latent variable</a></li>
+							<li><a href="comparison-SGA.html">Comparison SGA</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+				<div id="main">
+					<div class="inner">
+						<header>
+							<h1>Effect of the complexity</h1>
+
+							<p>We expect the success of our method to be correlated to the complexity of the music it is trained on. We tested this hypothesis with listening tests. To do so, we trained the method on different datasets with increasing complexity.
+							</p>
+
+							<h3>1) Simple midi </h3>
+
+							<p> The simplest case we handled was `hand-written' MIDI data. Here, the MIDI annotations have little variation since they are written down by humans on a quantized structure. For this case, we used the Lakh MIDI dataset, a collection of 176,581 unique MIDI files, 45,129 of which have been matched and aligned to entries in the Million Song Dataset. The Lakh MIDI dataset was generated with the goal of facilitating large-scale music information retrieval, both symbolic (using the MIDI files alone) and audio content-based (using information extracted from the MIDI files as annotations for the matched audio files).
+
+								<ul style="list-style-type:none">
+		                <li><audio controls>
+		                    <source src="audio/complexity/1)/Lakh_GAN_2.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                    </audio>
+		                </li>
+
+		                <li><audio controls>
+		                    <source src="audio/complexity/1)/Lakh_GAN_3.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                    </audio>
+		                </li>
+		                <li><audio controls>
+		                    <source src="audio/complexity/1)/Lakh_GAN_4.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                    </audio>
+		                </li>
+		                <li><audio controls>
+		                    <source src="audio/complexity/1)/Lakh_GAN_5.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                    </audio>
+		                </li>
+		            </ul>
+
+							<h3>2) Midi recorded from human performances</h3>
+							<p>
+								For the second complexity level, we used MIDI data that was extracted from performances on a piano. Here, the added complexity is the lack of a strict musical structure such as the precise tempo present from level 1). For this case, we used the Maestro dataset, a dataset containing over 200 hours of paired audio and MIDI recordings from ten years of International Piano-e-Competition. In this competitions, virtuoso pianist perform on Yamaha Disklaviers which, in addition to being concert-quality acoustic grand pianos, utilize an integrated high-precision MIDI capture and playback system. The MIDI data includes key strike velocities and sustain/sostenuto/una corda pedal positions.
+								The repertoire is mostly classical, including composers from the 17th to early 20th century.
+							</p>
+
+							<ul style="list-style-type:none">
+									<li><audio controls>
+											<source src="audio/complexity/2)/maestro-midi_GAN_16.flac" type="audio/mpeg">
+											Your browser does not support the audio element.
+											</audio>
+									</li>
+
+									<li><audio controls>
+											<source src="audio/complexity/2)/maestro-midi_GAN_17.flac" type="audio/mpeg">
+											Your browser does not support the audio element.
+											</audio>
+									</li>
+									<li><audio controls>
+											<source src="audio/complexity/2)/maestro-midi_GAN_20.flac" type="audio/mpeg">
+											Your browser does not support the audio element.
+											</audio>
+									</li>
+									<li><audio controls>
+											<source src="audio/complexity/2)/maestro-midi_GAN_22.flac" type="audio/mpeg">
+											Your browser does not support the audio element.
+											</audio>
+									</li>
+							</ul>
+
+
+
+					<h3>3) Recordings of piano performances</h3>
+					<p>For the third complexity level, we used real recorded performances of grand pianos. These are the same pieces from the second complexity level. This level adds the sound complexity of a real instrument compared to a simple midi synthesized sound.
+
+						<ul style="list-style-type:none">
+								<li><audio controls>
+										<source src="audio/complexity/3)/maestro-recordings_GAN_18.flac" type="audio/mpeg">
+										Your browser does not support the audio element.
+										</audio>
+								</li>
+
+								<li><audio controls>
+										<source src="audio/complexity/3)/maestro-recordings_GAN_19.flac" type="audio/mpeg">
+										Your browser does not support the audio element.
+										</audio>
+								</li>
+								<li><audio controls>
+										<source src="audio/complexity/3)/maestro-recordings_GAN_20.flac" type="audio/mpeg">
+										Your browser does not support the audio element.
+										</audio>
+								</li>
+								<li><audio controls>
+										<source src="audio/complexity/3)/maestro-recordings_GAN_21.flac" type="audio/mpeg">
+										Your browser does not support the audio element.
+										</audio>
+								</li>
+						</ul>
+
+					<h3>4) Free music - single genre</h3>
+					<p>The fourth level of complexity is the last one we used for the listening tests. For this, we wanted to test the system on a broader scenario including a more general definition of music. On this level, the added complexity is the interaction between several real instruments. To remove some variation from the dataset, we trained the network on a single genre at the time, in this case either rock or electronic music (for the listening test we only used rock samples). For this complexity level, we used the free music archive dataset (FMA), particularly, a subset we generated by segmenting the `small' dataset by genre. FMA is an open and easily accessible dataset, usually used for evaluating tasks in musical information retrieval. The small version of FMA is comprised of 8,000 30s segments of songs with eight balanced genres sampled at 44.1kHz.
+					</p>
+
+					<ul style="list-style-type:none">
+							<li><audio controls>
+									<source src="audio/complexity/4)/fma-rock_GAN_14.flac" type="audio/mpeg">
+									Your browser does not support the audio element.
+									</audio>
+							</li>
+
+							<li><audio controls>
+									<source src="audio/complexity/4)/fma-rock_GAN_15.flac" type="audio/mpeg">
+									Your browser does not support the audio element.
+									</audio>
+							</li>
+							<li><audio controls>
+									<source src="audio/complexity/4)/fma-rock_GAN_16.flac" type="audio/mpeg">
+									Your browser does not support the audio element.
+									</audio>
+							</li>
+							<li><audio controls>
+									<source src="audio/complexity/4)/fma-rock_GAN_18.flac" type="audio/mpeg">
+									Your browser does not support the audio element.
+									</audio>
+							</li>
+					</ul>
+
+					<h3>5) Free music - several genres</h3>
+					<p>The last level of complexity includes several genres. For this, we trained the system on the whole of FMA `small' dataset we used to generate the fourth level. We observed during training that the system was highly unstable and the results were clearly poor, such that we decided not to include them on the listening test.
+					</p>
+
+						</header>
+
+					</div>
+				</div>
+
+			<!-- Footer -->
+				<footer id="footer">
+					<div class="inner">
+						<section>
+							<h2>Resources</h2>
+							<ul class="icons">
+								<li><a href="mailto:andimarafioti@gmail.com" target="_blank" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+								<li><a href="https://github.com/andimarafioti/GANinpainting" target="_blank" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+							</ul>
+						</section>
+						<ul class="copyright">
+							<li>&copy; All rights reserved</li>
+						</ul>
+					</div>
+				</footer>
+
+		</div>
+
+
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+	</body>
+</html>
