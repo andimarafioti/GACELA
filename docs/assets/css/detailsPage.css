@@ -1,0 +1,101 @@
+
+#header {
+    padding-top:3em;
+}
+
+.workContainer {
+    overflow: hidden;
+    margin-bottom:2em;
+}
+
+.workImage {
+    border:solid;
+}
+
+.fechaVigenciaLaboral {
+    margin-bottom: 1vw;
+}
+
+.workTitle {
+    margin-bottom:0;
+    font-weight: bold;
+}
+
+.workDescription {
+    margin-bottom:0;
+}
+
+.workContainer h2 {
+    margin-bottom:0;
+    font-size: 1.5em;
+}
+
+p {
+    text-align: justify;
+    font-size: 1.2em;    
+}
+
+.columnLeft {
+    float: left;
+    max-width: 40%;
+}
+
+.columnRight {
+    float: right;
+    width: 80%;
+} 
+
+.image.left {
+    max-width: 100%;
+} 
+
+@media screen and (max-width: 1280px) {
+    p {
+        font-size: 1.1em;
+    }  
+    .columnRight {        
+        width: 74%;
+    } 
+    #header {
+        padding-top:3em;
+    }
+}
+
+@media screen and (max-width: 980px) {    
+    .columnRight {        
+        width: 65%;
+    } 
+}
+
+@media screen and (max-width: 736px) {
+    p {
+        font-size: 1em;
+    }  
+    .columnRight {        
+        width: 60%;
+    } 
+    #header {
+        padding-top:1.3em;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    p {
+        font-size: 0.9em;
+    }  
+    .columnRight {        
+        float:left;
+        width:100%;
+    } 
+}
+
+@media screen and (max-width: 320px) {
+    p {
+        font-size: 0.8em;
+    }  
+    h2 {
+        font-size: 1em;
+    }
+}
+
+
