@@ -1,0 +1,203 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Adversarial context encoder - Effect of the latent variable</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="stylesheet" href="assets/css/home.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="index.html" class="logo">
+									<span class="symbol"><img src="images/logo.svg" alt="" /></span><span class="title">Home</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="index.html">Home</a></li>
+							<li><a href="general.html">The adversarial context encoder</a></li>
+							<li><a href="complexity.html">Effect of the complexity</a></li>
+							<li><a href="length.html">Effect of the gap length</a></li>
+							<li><a href="latent-variable.html">Latent variable</a></li>
+							<li><a href="comparison-SGA.html">Comparison SGA</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+				<div id="main">
+					<div class="inner">
+						<header>
+							<h1>Effect of the latent variable</h1>
+							<p>Music inpainting in the range between tens of milliseconds and hundreds of milliseconds is a multi-modal task with no \emph{unique} plausible solution. We designed our context encoder to be able to model this behaviour. To model the multi-modal task during training, we use a GAN architecture. To model the multi-modal task after training, we condition the generator not only on the encoded context, but also on the latent variable, a random variable drawn from a uniform distribution. We expect different realizations of the random variable to output different solutions for the task. However, this might not be the case as it has been reported that GANs with very strong conditioning information do not rely heavily on the additional noise input distribution \cite{MathieuCL15, isola2017image, MelGAN-2019}. In order to evaluate if the generator changes it's output depending on the latent variable, we generate several different outputs keeping the context fix and changing the latent variable and we evaluate the outputs.
+							</p>
+						</header>
+
+		          <h1><img src="images/examples_latent_variable.png" alt="Latent variable" width=50%></h1>
+
+		            <ul style="list-style-type:none">
+		                <li>
+		                   <audio controls>
+		                    <source src="audio/latent variable/gap-0.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                  </audio> Gap 1A
+		                </li>
+		                <li>
+		                   <audio controls>
+		                    <source src="audio/latent variable/gap-1.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                  </audio> Gap 1B
+		                </li>
+		                <li>
+		                   <audio controls>
+		                    <source src="audio/latent variable/gap-inContext-0.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                  </audio> Gap with context 1A
+		                </li>
+		                <li>
+		                   <audio controls>
+		                    <source src="audio/latent variable/gap-inContext-1.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                  </audio> Gap with context 1B
+		                </li>
+		            </ul>
+
+		            <div class="aligncenter" style="width:60%;height:0px;background-color:#777777;"></div>
+
+		            <ul style="list-style-type:none">
+									  <li>
+		                   <audio controls>
+		                    <source src="audio/latent variable/gap-9.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                  </audio> Gap 2A
+		                </li>
+		                <li>
+		                   <audio controls>
+		                    <source src="audio/latent variable/gap-10.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                  </audio> Gap 2B
+		                </li>
+		                <li>
+		                   <audio controls>
+		                    <source src="audio/latent variable/gap-inContext-9.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                  </audio> Gap with context 2A
+		                </li>
+		                <li>
+		                   <audio controls>
+		                    <source src="audio/latent variable/gap-inContext-10.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                  </audio> Gap with context 2B
+		                </li>
+		            </ul>
+
+		            <div class="aligncenter" style="width:60%;height:0px;background-color:#777777;"></div>
+
+		            <ul style="list-style-type:none">
+		                <li>
+		                   <audio controls>
+		                    <source src="audio/latent variable/gap-16.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                  </audio> Gap 3A
+		                </li>
+		                <li>
+		                   <audio controls>
+		                    <source src="audio/latent variable/gap-17.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                  </audio> Gap 3B
+		                </li>
+		                <li>
+		                   <audio controls>
+		                    <source src="audio/latent variable/gap-inContext-16.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                  </audio> Gap with context 3A
+		                </li>
+		                <li>
+		                   <audio controls>
+		                    <source src="audio/latent variable/gap-inContext-17.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                  </audio> Gap with context 3B
+		                </li>
+		            </ul>
+
+								<div class="aligncenter" style="width:60%;height:0px;background-color:#777777;"></div>
+
+		            <ul style="list-style-type:none">
+		                <li>
+		                   <audio controls>
+		                    <source src="audio/latent variable/gap-61.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                  </audio> Gap 4A
+		                </li>
+		                <li>
+		                   <audio controls>
+		                    <source src="audio/latent variable/gap-62.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                  </audio> Gap 4B
+		                </li>
+		                <li>
+		                   <audio controls>
+		                    <source src="audio/latent variable/gap-inContext-61.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                  </audio> Gap with context 4A
+		                </li>
+		                <li>
+		                   <audio controls>
+		                    <source src="audio/latent variable/gap-inContext-62.flac" type="audio/mpeg">
+		                    Your browser does not support the audio element.
+		                  </audio> Gap with context 4B
+		                </li>
+		            </ul>
+
+
+					</div>
+				</div>
+
+			<!-- Footer -->
+				<footer id="footer">
+					<div class="inner">
+						<section>
+							<h2>Resources</h2>
+							<ul class="icons">
+								<li><a href="mailto:andimarafioti@gmail.com" target="_blank" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+								<li><a href="https://github.com/andimarafioti/GANinpainting" target="_blank" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+							</ul>
+						</section>
+						<ul class="copyright">
+							<li>&copy; All rights reserved</li>
+						</ul>
+					</div>
+				</footer>
+
+		</div>
+
+
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+	</body>
+</html>
