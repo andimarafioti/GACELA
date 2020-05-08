@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 	<head>
-		<title>Adversarial context encoder - ACE-Paint</title>
+		<title>GACELA - A generative adversarial context encoder for long audio inpainting</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="assets/css/main.css" />
@@ -48,11 +48,11 @@
 				<div id="main">
 					<div class="inner">
 						<header>
-							<h1>Adversarial context encoder - ACE-Paint</h1>
+							<h1>GACELA - A generative adversarial context encoder for long audio inpainting</h1>
 
 							<h1><img src="images/audio-inpainting.png" alt="General-1" width=70%></h1>
 
-							<p>Our system targets music inpainting in `long' gaps, i.e., in the range between hundreds of milliseconds and seconds. In this range, there are usually multiple plausible solutions for music inpainting and we consider the task as multi-modal. For example, on a gap where originally a single chord was played, there could be several other chords that fill in the gap while still sounding plausible. For each chord there are even several variations: different amount, intensities or onsets for each note. The multi-modality present at this range needs to be taken into account to model the task. Considering that a standard regression loss models a unique solution, it would lead to an average of the possible solutions and it is a bad fit for the task at this range. To solve this challenge, we model the task with a GAN, as it is able to model the distribution of possible gap replacements instead of producing a single candidate.
+							<p>GACELA targets music inpainting in `long' gaps, i.e., in the range between hundreds of milliseconds and seconds. In this range, there are usually multiple plausible solutions for music inpainting and we consider the task as multi-modal. For example, on a gap where originally a single chord was played, there could be several other chords that fill in the gap while still sounding plausible. For each chord there are even several variations: different amount, intensities or onsets for each note. The multi-modality present at this range needs to be taken into account to model the task. Considering that a standard regression loss models a unique solution, it would lead to an average of the possible solutions and it is a bad fit for the task at this range. To solve this challenge, we model the task with a GAN, as it is able to model the distribution of possible gap replacements instead of producing a single candidate.
 							</p>
 							<p>
 							An overview of our end-to-end audio generation is presented in the figure above.
