@@ -1,0 +1,135 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Adversarial context encoder - Comparison SGA</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="stylesheet" href="assets/css/home.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="index.html" class="logo">
+									<span class="symbol"><img src="images/logo.svg" alt="" /></span><span class="title">Home</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="index.html">Home</a></li>
+							<li><a href="general.html">The adversarial context encoder</a></li>
+							<li><a href="complexity.html">Effect of the complexity</a></li>
+							<li><a href="length.html">Effect of the gap length</a></li>
+							<li><a href="latent-variable.html">Latent variable</a></li>
+							<li><a href="comparison-SGA.html">Comparison SGA</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+				<div id="main">
+					<div class="inner">
+						<header>
+							<h1>Comparison to the similarity graph algorithm (SGA)</h1>
+							<p>While SGA is, to the best of our knowledge, the only method that has been systematically evaluated on missing segments of similar duration, the different conditions for SGA and our network do not allow for a meaningful performance comparison, as we would do obtain from a listening test. There are conditions for which SGA is almost the optimal solution: A localized corruption on a song with lots of repetition, where the solution does not need to be computed quickly and extending the total length of the song is not a problem. In that setting, SGA attempts to automate what a trained technician would do. There are other conditions where SGA can not be applied and our method can such as signals that present repetitive corruptions in intervals, where a longer context is not available, or where the signal present little repetition. Nevertheless, we applied our method trained on fma-rock to the rock songs used for the listening tests in Perraudin et Al (2016).</p>
+						</header>
+
+						<ul style="list-style-type:none">
+                <li><audio controls>
+                    <source src="audio/SGA/1.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio>
+                </li>
+
+                <li><audio controls>
+                    <source src="audio/SGA/2.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio>
+                </li>
+                <li><audio controls>
+                    <source src="audio/SGA/3.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio>
+                </li>
+                <li><audio controls>
+                    <source src="audio/SGA/4.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio>
+                </li>
+
+                <li><audio controls>
+                    <source src="audio/SGA/5.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio>
+                </li>
+                <li><audio controls>
+                    <source src="audio/SGA/6.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio>
+                </li>
+                <li><audio controls>
+                    <source src="audio/SGA/7.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio>
+                </li>
+                <li><audio controls>
+                    <source src="audio/SGA/8.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio>
+                </li>
+                <li><audio controls>
+                    <source src="audio/SGA/9.flac" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio>
+                </li>
+            </ul>
+
+					</div>
+				</div>
+
+			<!-- Footer -->
+				<footer id="footer">
+					<div class="inner">
+						<section>
+							<h2>Resources</h2>
+							<ul class="icons">
+								<li><a href="mailto:andimarafioti@gmail.com" target="_blank" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+								<li><a href="https://github.com/andimarafioti/GANinpainting" target="_blank" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+							</ul>
+						</section>
+						<ul class="copyright">
+							<li>&copy; All rights reserved</li>
+						</ul>
+					</div>
+				</footer>
+
+		</div>
+
+
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+	</body>
+</html>
