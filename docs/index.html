@@ -1,296 +1,140 @@
-<!DOCTYPE html>
-<html lang="en">
-<title>A context encoder for audio inpainting of long gaps</title>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="w3.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<style>
-body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
-.w3-bar,h1,button {font-family: "Montserrat", sans-serif}
-.fa-anchor,.fa-coffee {font-size:200px}
-</style>
-<body>
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Adversarial context encoder</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="stylesheet" href="assets/css/home.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
 
-<!-- Navbar -->
-<div class="w3-top">
-  <div class="w3-bar w3-pale-red w3-card w3-left-align w3-large">
-    <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-red" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
-    <a href="#" class="w3-bar-item w3-button w3-padding-large w3-white">The system</a>
-    <a href="#S-E" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Latent variable</a>
-    <a href="#SGA" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Comparison SGA</a>
-  </div>
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
 
-  <!-- Navbar on small screens -->
-  <div id="navDemo" class="w3-bar-block w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
-    <a href="#S-E" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Latent variable</a>
-    <a href="#P-E" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Comparison SGA</a>
-  </div>
-</div>
+							<!-- Logo -->
+								<a href="index.html" class="logo">
+									<span class="symbol"><img src="images/logo.svg" alt="" /></span><span class="title">Home</span>
+								</a>
 
-<!-- Header -->
-<header class="w3-container w3-pale-red w3-center" style="padding:128px 16px">
-  <h1 class="w3-margin w3-jumbo">A context encoder for audio inpainting of long gaps</h1>
-    <h5 class="w3-xlarge">This website accompanies the work presented as a <a href="https://www.researchgate.net/publication/link" target="_blank">pre-print here</a>.</h5>
-    <h5 class="w3-xlarge">The code used can be found <a href="https://github.com/andimarafioti/GANinpainting" target="_blank">here</a>. <a href="https://github.com/andimarafioti/GANinpainting" target="_blank" class="fa fa-github w3-hover-opacity"></a></h5>
-</header>
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
 
-<!-- First Grid -->
-<div class="w3-row-padding w3-padding-32 w3-container">
-  <div class="w3-content">
-    <div class="w3-twothird">
-      <h5 class="w3-padding-32">
-        We introduce TiFGAN, the first GAN to generate audio successfully using a Time-Frequency (TF) representation and improving on the current state-of-the-art for audio synthesis with GANs. TiFGAN is an adaptation of DCGAN, originally proposed for image generation. The TiFGAN architecture additionally relies on the guidelines and principles for generating short-time Fourier data that we presented in the accompanying paper.
-      </h5>
+						</div>
+					</header>
 
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="index.html">Home</a></li>
+							<li><a href="general.html">The adversarial context encoder</a></li>
+							<li><a href="complexity.html">Effect of the complexity</a></li>
+							<li><a href="length.html">Effect of the gap length</a></li>
+							<li><a href="latent-variable.html">Latent variable</a></li>
+							<li><a href="comparison-SGA.html">Comparison SGA</a></li>
+						</ul>
+					</nav>
 
-      <h1><img src="images/audio-inpainting.png" alt="Change in distributions from spectrogram to log-spectrogam" width=100%></h1>
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<header>
+								<h1>ACE-Paint: An adversarial context encoder for audio inpainting</h1>
+								<p>We present an adversarial context encoder designed to restore missing segments of ca. 1 second duration in musical audio data, i.e., to perform audio inpainting of long gaps. Previous work has been concerned with either smaller gaps of audio content or has relied on exemplars, copying available information from other parts of the signal. When inpainting a long gap, the audio characteristics and underlying structure of the generated signal must match precisely that of the original signal, making this a particularly difficult task. To address this, we use a generative adversarial network with five discriminators that simultaneously assess the quality of the generated signal and how it respects the general structure of the original signal. Additionally, the system is capable of generating different solutions for a single gap, since it models the uncertainty inherent to the task. We tested this system with listening tests on different types of music signals and on gaps ranging from 375~ms to 1500~ms duration. We found that while subjects were often able to detect the signals inpainted by the system, they did not find the inpainting to be disturbing.</p>
+							</header>
+							<section class="tiles">
+								<article class="style1">
+									<span class="image">
+										<img src="images/pic01.jpg" alt="" />
+									</span>
+									<a href="general.html">
+										<h2>The adversarial context encoder</h2>
+										<div class="content">
+											<p>A general description of the system.</p>
+										</div>
+									</a>
+								</article>
+								<article class="style2">
+									<span class="image">
+										<img src="images/pic02.jpg" alt="" />
+									</span>
+									<a href="complexity.html">
+										<h2>Effect of the complexity</h2>
+										<div class="content">
+											<p>Sound samples for music pieces of different complexities.</p>
+										</div>
+									</a>
+								</article>
+								<article class="style3">
+									<span class="image">
+										<img src="images/pic03.jpg" alt="" />
+									</span>
+									<a href="length.html">
+										<h2>Effect of the gap length</h2>
+										<div class="content">
+											<p>Sound samples for different gap lengths.</p>
+										</div>
+									</a>
+								</article>
+								<article class="style4">
+									<span class="image">
+										<img src="images/pic04.jpg" alt="" />
+									</span>
+									<a href="latent-variable.html">
+										<h2>Latent variable</h2>
+										<div class="content">
+											<p>Sound samples fixing the context and drawing different samples from the latent variable.</p>
+										</div>
+									</a>
+								</article>
+								<article class="style5">
+									<span class="image">
+										<img src="images/pic05.jpg" alt="" />
+									</span>
+									<a href="comparison-SGA.html">
+										<h2>Comparison to SGA</h2>
+										<div class="content">
+											<p>Sound samples from our system on the songs used for the listening test in the similarity graph algorithm.</p>
+										</div>
+									</a>
+								</article>
+							</section>
+						</div>
+					</div>
 
-      <h5 class="w3-padding-32">
-The general architecture for TiFGAN is depicted above. For the purpose of this contribution, we restrict to generating 1 second of audio data, sampled at 16kHz. For the short-time Fourier transform, we chose for the analysis window a (sampled) Gaussian and fix the minimal redundancy that we consider reliable, i.e., M/a = 4 and select a=128, M=512. Since the Nyquist frequency is not expected to hold significant information for the considered signals, we drop it to arrive at a representation size of 256x128, which is well suited to processing using strided convolutions. For the reconstruction of the phase we use phase-gradient heap integration (PGHI) (see <a href="https://ieeexplore.ieee.org/document/7890450" target="_blank">Prusa et Al</a>) which requires no iteration, such that reconstruction time is comparable to simply integrating the phase derivatives. For synthesis from the STFT, we use the canonical dual window, precomputed using the Large Time-Frequency Analysis Toolbox (<a href="http://ltfat.github.io/" target="_blank">LTFAT</a>).
-</h5>
+				<!-- Footer -->
+					<footer id="footer">
+						<div class="inner">
+							<section>
+								<h2>Resources</h2>
+								<ul class="icons">
+									<li><a href="mailto:andimarafioti@gmail.com" target="_blank" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+									<li><a href="https://github.com/andimarafioti/GANinpainting" target="_blank" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+								</ul>
+							</section>
+							<ul class="copyright">
+								<li>&copy; All rights reserved</li>
+							</ul>
+						</div>
+					</footer>
 
-      <h1><img src="images/audio-inpainting-gan.png" alt="Change in distributions from spectrogram to log-spectrogam" width=100%></h1>
+			</div>
 
-      <h5 class="w3-padding-32">
-<p>Since the distribution of values in the magnitude of the Short-Time Fourier Transform (STFT) is not well suited for a GAN (see  Figure above) we use log-magnitude coefficients. We first normalize the STFT magnitude to have maximum value 1, such that the log-magnitude is confined in (-inf, 0]. Then, the dynamic range of the log-magnitude is limited by clipping at -r (in our experiments r=10), before scaling and shifting to the range of the generator output [-1,1], i.e. dividing by r/2 before adding constant 1.
-</p>
-<p>
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
 
-The network trained to generate log-magnitudes will be referred to as TiFGAN-M.  For TiFGAN-M, the phase derivatives are estimated from the generated log-magnitude. Generation of, and synthesis from, the log-magnitude STFT is the main focus of  this  contribution. Nonetheless,  we  also  trained  a  variant architecture TiFGAN-MTF for which we additionally provided the time- and frequency-direction derivatives of the (unwrapped, demodulated) phase.
-
-</p>
-</h5>
-    </div>
-</div>
-</div>
-
-<!-- Second Grid -->
-<div id="S-E"  class="w3-row-padding w3-light-grey w3-padding-64 w3-container">
-  <div class="w3-content">
-
-    <div class="w3-twothird">
-      <h1> How is the input distribution affecting the results?</h1>
-        <h5>Music inpainting in the range between tens of milliseconds and hundreds of milliseconds is a multi-modal task with no \emph{unique} plausible solution. We designed our context encoder to be able to model this behaviour. To model the multi-modal task during training, we use a GAN architecture. To model the multi-modal task after training, we condition the generator not only on the encoded context, but also on the latent variable, a random variable drawn from a uniform distribution. We expect different realizations of the random variable to output different solutions for the task. However, this might not be the case as it has been reported that GANs with very strong conditioning information do not rely heavily on the additional noise input distribution \cite{MathieuCL15, isola2017image, MelGAN-2019}. In order to evaluate if the generator changes it's output depending on the latent variable, we generate several different outputs keeping the context fix and changing the latent variable and we evaluate the outputs.
-        </h5>
-
-        <div class="w3-center ">
-          <h1><img src="images/examples_latent_variable.png" alt="Trumpet" width=50%></h1>
-        </div>
-
-            <ul style="list-style-type:none">
-                <li>
-                   <audio controls>
-                    <source src="audio/latent variable/gap-0.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                  </audio> Gap 1A
-                </li>
-                <li>
-                   <audio controls>
-                    <source src="audio/latent variable/gap-1.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                  </audio> Gap 1B
-                </li>
-                <li>
-                   <audio controls>
-                    <source src="audio/latent variable/gap-inContext-0.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                  </audio> Gap with context 1A
-                </li>
-                <li>
-                   <audio controls>
-                    <source src="audio/latent variable/gap-inContext-1.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                  </audio> Gap with context 1B
-                </li>
-            </ul>
-
-            <div class="aligncenter" style="width:150%;height:2px;background-color:#777777;"></div>
-
-            <ul style="list-style-type:none">
-                <li>
-                   <audio controls>
-                    <source src="audio/latent variable/gap-9.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                  </audio> Gap 2A
-                </li>
-                <li>
-                   <audio controls>
-                    <source src="audio/latent variable/gap-10.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                  </audio> Gap 2B
-                </li>
-                <li>
-                   <audio controls>
-                    <source src="audio/latent variable/gap-inContext-9.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                  </audio> Gap with context 2A
-                </li>
-                <li>
-                   <audio controls>
-                    <source src="audio/latent variable/gap-inContext-10.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                  </audio> Gap with context 2B
-                </li>
-            </ul>
-
-            <div class="aligncenter" style="width:150%;height:2px;background-color:#777777;"></div>
-
-            <ul style="list-style-type:none">
-                <li>
-                   <audio controls>
-                    <source src="audio/latent variable/gap-16.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                  </audio> Gap 3A
-                </li>
-                <li>
-                   <audio controls>
-                    <source src="audio/latent variable/gap-17.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                  </audio> Gap 3B
-                </li>
-                <li>
-                   <audio controls>
-                    <source src="audio/latent variable/gap-inContext-16.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                  </audio> Gap with context 3A
-                </li>
-                <li>
-                   <audio controls>
-                    <source src="audio/latent variable/gap-inContext-17.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                  </audio> Gap with context 3B
-                </li>
-            </ul>
-
-            <div class="aligncenter" style="width:150%;height:2px;background-color:#777777;"></div>
-
-            <ul style="list-style-type:none">
-                <li>
-                   <audio controls>
-                    <source src="audio/latent variable/gap-61.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                  </audio> Gap 4A
-                </li>
-                <li>
-                   <audio controls>
-                    <source src="audio/latent variable/gap-62.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                  </audio> Gap 4B
-                </li>
-                <li>
-                   <audio controls>
-                    <source src="audio/latent variable/gap-inContext-61.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                  </audio> Gap with context 4A
-                </li>
-                <li>
-                   <audio controls>
-                    <source src="audio/latent variable/gap-inContext-62.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                  </audio> Gap with context 4B
-                </li>
-            </ul>
-
-
-    </div>
-  </div>
-</div>
-
-<!-- Third Grid -->
-<div id="SGA" class="w3-row-padding w3-padding-64 w3-container">
-  <div class="w3-content">
-    <div class="w3-twothird">
-      <h1>Comparison to the similarity graph algorithm (SGA)</h1>
-
-      <div class="w3-center ">
-        <h1><img src="images/SGA.png" alt="Trumpet" width=50%></h1>
-      </div>
-
-         <h5>While SGA is, to the best of our knowledge, the only method that has been systematically evaluated on missing segments of similar duration, the different conditions for SGA and our network do not allow for a meaningful performance comparison, as we would do obtain from a listening test. There are conditions for which SGA is almost the optimal solution: A localized corruption on a song with lots of repetition, where the solution does not need to be computed quickly and extending the total length of the song is not a problem. In that setting, SGA attempts to automate what a trained technician would do. There are other conditions where SGA can not be applied and our method can such as signals that present repetitive corruptions in intervals, where a longer context is not available, or where the signal present little repetition. Nevertheless, we applied our method trained on fma-rock to the rock songs used for the listening tests in Perraudin et Al (2016).</h5>
-
-
-            <ul style="list-style-type:none">
-                <li><audio controls>
-                    <source src="audio/SGA/1.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                    </audio>
-                </li>
-
-                <li><audio controls>
-                    <source src="audio/SGA/2.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                    </audio>
-                </li>
-                <li><audio controls>
-                    <source src="audio/SGA/3.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                    </audio>
-                </li>
-                <li><audio controls>
-                    <source src="audio/SGA/4.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                    </audio>
-                </li>
-
-                <li><audio controls>
-                    <source src="audio/SGA/5.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                    </audio>
-                </li>
-                <li><audio controls>
-                    <source src="audio/SGA/6.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                    </audio>
-                </li>
-                <li><audio controls>
-                    <source src="audio/SGA/7.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                    </audio>
-                </li>
-                <li><audio controls>
-                    <source src="audio/SGA/8.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                    </audio>
-                </li>
-                <li><audio controls>
-                    <source src="audio/SGA/9.flac" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                    </audio>
-                </li>
-            </ul>
-
-    </div>
-
-
-  </div>
-</div>
-
-
-<div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
-    <h1 class="w3-margin w3-xlarge">Quote of the day: phase life</h1>
-</div>
-
-<!-- Footer -->
-<footer class="w3-container w3-padding-64 w3-center w3-opacity">
-  <div class="w3-xlarge w3-padding-32">
-    <a href="https://github.com/tifgan/stftGAN" class="fa fa-github w3-hover-opacity"></a>
- </div>
-</footer>
-
-<script>
-// Used to toggle the menu on small screens when clicking on the menu button
-function myFunction() {
-    var x = document.getElementById("navDemo");
-    if (x.className.indexOf("w3-show") == -1) {
-        x.className += " w3-show";
-    } else {
-        x.className = x.className.replace(" w3-show", "");
-    }
-}
-</script>
-
-</body>
+	</body>
 </html>
