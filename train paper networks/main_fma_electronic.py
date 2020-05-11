@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '../')
+
 import torch
 
 from data.audioLoader import AudioLoader
@@ -116,8 +119,8 @@ args['log_interval'] = 100
 args['spectrogram_shape'] = params['net']['shape']
 args['gamma_gp'] = params['net']['gamma_gp']
 args['tensorboard_interval'] = 500
-args['save_path'] = 'saved_results/'
-args['experiment_name'] = 'midi_maestro_new'
+args['save_path'] = '../saved_results/'
+args['experiment_name'] = 'fma_electronic'
 args['save_interval'] = 10000
 
 args['fft_length'] = 1024
@@ -129,7 +132,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 examples_per_file = 32
 audioLoader = AudioLoader(args['sampling_rate'], args['fft_length'], args['fft_hop_size'], 50)
 
-dataFolder = "../../../Datasets/new-maestro-midi/"
+dataFolder = "../../../../Datasets/fma_electronic/"
 
 trainDataset = TrainDataset(dataFolder, window_size=1024, audio_loader=audioLoader, examples_per_file=examples_per_file,
                             loaded_files_buffer=20, file_usages=30)
@@ -139,10 +142,11 @@ train_loader = torch.utils.data.DataLoader(trainDataset,
                                            shuffle=True,
                                            num_workers=4, drop_last=True)
 
-start_at_step = 260000
-start_at_epoch = 1
+start_at_step = 0
+start_at_epoch = 0
 
 ganSystem = GANSystem(args)
+
 for epoch in range(start_at_epoch, 10):
     start_at_step, can_restart = ganSystem.train(train_loader, epoch, start_at_step)
     if not can_restart:

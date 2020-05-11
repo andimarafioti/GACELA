@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '../')
+
 import torch
 
 from data.audioLoader import AudioLoader
@@ -46,9 +49,9 @@ params_generator['in_conv_shape'] = [16, 2]
 params_generator['borders'] = dict()
 params_generator['borders']['nfilter'] = [md, 2 * md, md, md / 2]
 params_generator['borders']['shape'] = [[5, 5], [5, 5], [5, 5], [5, 5]]
-params_generator['borders']['stride'] = [2, 2, 2, 2]
+params_generator['borders']['stride'] = [2, 2, 3, 4]
 params_generator['borders']['data_size'] = 2
-params_generator['borders']['border_scale'] = 1
+params_generator['borders']['border_scale'] = 2
 # This does not work because of flipping, border 2 need to be flipped tf.reverse(l, axis=[1]), ask Nathanael
 params_generator['borders']['width_full'] = None
 
@@ -109,16 +112,16 @@ args['borderEncoder'] = params_generator['borders']
 args['stft_discriminator_in_shape'] = [1, 512, 64]
 args['mel_discriminator_in_shape'] = [1, 80, 64]
 args['mel_discriminator_start_powscale'] = 2
-args['generator_input'] = 1440
+args['generator_input'] = 1980
 args['optimizer'] = params_optimization
 args['split'] = signal_split
 args['log_interval'] = 100
 args['spectrogram_shape'] = params['net']['shape']
 args['gamma_gp'] = params['net']['gamma_gp']
 args['tensorboard_interval'] = 500
-args['save_path'] = 'saved_results/'
-args['experiment_name'] = 'fma_electronic'
-args['save_interval'] = 10000
+args['save_path'] = '../saved_results/'
+args['experiment_name'] = 'wasserstein_stft_2_mel_3_melstartpow2'
+args['save_interval'] = 50000
 
 args['fft_length'] = 1024
 args['fft_hop_size'] = 256
@@ -129,7 +132,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 examples_per_file = 32
 audioLoader = AudioLoader(args['sampling_rate'], args['fft_length'], args['fft_hop_size'], 50)
 
-dataFolder = "../../../Datasets/fma_electronic/"
+dataFolder = "../../../../Datasets/maestro-v2.0.0/"
 
 trainDataset = TrainDataset(dataFolder, window_size=1024, audio_loader=audioLoader, examples_per_file=examples_per_file,
                             loaded_files_buffer=20, file_usages=30)
@@ -143,7 +146,6 @@ start_at_step = 0
 start_at_epoch = 0
 
 ganSystem = GANSystem(args)
-
 for epoch in range(start_at_epoch, 10):
     start_at_step, can_restart = ganSystem.train(train_loader, epoch, start_at_step)
     if not can_restart:

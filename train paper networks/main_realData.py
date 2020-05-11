@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '../')
+
 import torch
 
 from data.audioLoader import AudioLoader
@@ -116,7 +119,7 @@ args['log_interval'] = 100
 args['spectrogram_shape'] = params['net']['shape']
 args['gamma_gp'] = params['net']['gamma_gp']
 args['tensorboard_interval'] = 500
-args['save_path'] = 'saved_results/'
+args['save_path'] = '../saved_results/'
 args['experiment_name'] = 'real_data'
 args['save_interval'] = 10000
 
@@ -129,7 +132,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 examples_per_file = 32
 audioLoader = AudioLoader(args['sampling_rate'], args['fft_length'], args['fft_hop_size'], 50)
 
-dataFolder = "../../../Datasets/maestro-v2.0.0/"
+dataFolder = "../../../../Datasets/maestro-v2.0.0/"
 
 trainDataset = TrainDataset(dataFolder, window_size=1024, audio_loader=audioLoader, examples_per_file=examples_per_file,
                             loaded_files_buffer=20, file_usages=30)

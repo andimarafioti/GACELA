@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '../')
+
 import torch
 
 from data.audioLoader import AudioLoader
@@ -17,7 +20,7 @@ logging.getLogger().addHandler(console_handler)
 
 __author__ = 'Andres'
 
-signal_split = [480, 64, 480]
+signal_split = [960, 128, 960]
 md = 32
 
 params_stft_discriminator = dict()
@@ -42,7 +45,7 @@ params_generator['residual_blocks'] = 2
 params_generator['full'] = 256 * md
 params_generator['summary'] = True
 params_generator['data_size'] = 2
-params_generator['in_conv_shape'] = [16, 2]
+params_generator['in_conv_shape'] = [16, 4]
 params_generator['borders'] = dict()
 params_generator['borders']['nfilter'] = [md, 2 * md, md, md / 2]
 params_generator['borders']['shape'] = [[5, 5], [5, 5], [5, 5], [5, 5]]
@@ -85,7 +88,7 @@ params['net']['generator'] = params_generator
 params['net']['stft_discriminator'] = params_stft_discriminator
 params['net']['mel_discriminator'] = params_mel_discriminator
 params['net']['prior_distribution'] = 'gaussian'
-params['net']['shape'] = [1, 512, 1024]  # Shape of the image
+params['net']['shape'] = [1, 512, 2048]  # Shape of the image
 params['net']['inpainting'] = dict()
 params['net']['inpainting']['split'] = signal_split
 params['net']['gamma_gp'] = 10  # Gradient penalty
@@ -106,18 +109,18 @@ args['mel_discriminator_count'] = 3
 args['stft_discriminator'] = params_stft_discriminator
 args['mel_discriminator'] = params_mel_discriminator
 args['borderEncoder'] = params_generator['borders']
-args['stft_discriminator_in_shape'] = [1, 512, 64]
-args['mel_discriminator_in_shape'] = [1, 80, 64]
+args['stft_discriminator_in_shape'] = [1, 512, 128]
+args['mel_discriminator_in_shape'] = [1, 80, 128]
 args['mel_discriminator_start_powscale'] = 2
-args['generator_input'] = 1440
+args['generator_input'] = 2700
 args['optimizer'] = params_optimization
 args['split'] = signal_split
 args['log_interval'] = 100
 args['spectrogram_shape'] = params['net']['shape']
 args['gamma_gp'] = params['net']['gamma_gp']
 args['tensorboard_interval'] = 500
-args['save_path'] = 'saved_results/'
-args['experiment_name'] = 'fma'
+args['save_path'] = '../saved_results/'
+args['experiment_name'] = 'real_data_960_128_960'
 args['save_interval'] = 10000
 
 args['fft_length'] = 1024
@@ -129,9 +132,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 examples_per_file = 32
 audioLoader = AudioLoader(args['sampling_rate'], args['fft_length'], args['fft_hop_size'], 50)
 
-dataFolder = "../../../Datasets/fma_small/"
+dataFolder = "../../../../Datasets/maestro-v2.0.0/"
 
-trainDataset = TrainDataset(dataFolder, window_size=1024, audio_loader=audioLoader, examples_per_file=examples_per_file,
+trainDataset = TrainDataset(dataFolder, window_size=2048, audio_loader=audioLoader, examples_per_file=examples_per_file,
                             loaded_files_buffer=20, file_usages=30)
 
 train_loader = torch.utils.data.DataLoader(trainDataset,
@@ -139,8 +142,8 @@ train_loader = torch.utils.data.DataLoader(trainDataset,
                                            shuffle=True,
                                            num_workers=4, drop_last=True)
 
-start_at_step = 250000
-start_at_epoch = 4
+start_at_step = 10000
+start_at_epoch = 1
 
 ganSystem = GANSystem(args)
 
