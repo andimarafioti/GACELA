@@ -12,25 +12,7 @@ def parse_args():
     parser.add_argument("--signal_split", type=list, default=[480, 64, 480], help='time bins before the gap, in the gap, and after the gap')
     parser.add_argument("--md", type=int, default=32, 
 	help='general size of the network')
-	
 
-    parser.add_argument("--n_residual_layers", type=int, default=3)
-
-    parser.add_argument("--ndf", type=int, default=16)
-    parser.add_argument("--num_D", type=int, default=3)
-    parser.add_argument("--n_layers_D", type=int, default=4)
-    parser.add_argument("--downsamp_factor", type=int, default=4)
-    parser.add_argument("--lambda_feat", type=float, default=10)
-    parser.add_argument("--cond_disc", action="store_true")
-
-    parser.add_argument("--data_path", default=None, type=Path)
-    parser.add_argument("--batch_size", type=int, default=16)
-    parser.add_argument("--seq_len", type=int, default=8192)
-
-    parser.add_argument("--epochs", type=int, default=3000)
-    parser.add_argument("--log_interval", type=int, default=100)
-    parser.add_argument("--save_interval", type=int, default=1000)
-    parser.add_argument("--n_test_samples", type=int, default=8)
     args = parser.parse_args()
     return args
 
