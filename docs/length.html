@@ -53,6 +53,10 @@
 							<p>To test how the performance of GACELA relates to the lenght of the gap, we trained GACELA on different gap lengths and evaluated them with listening tests. We kept the network structure as fixed as possible, such that the description from the paper still applies to every network trained for this experiment (2 stft discriminators, 3 mel discriminators). The selected gap lengths were 372 ms, 743 ms and 1486 ms. Since we expect the effect of the gap length to be independent from the effect of the complexity of the music, we trained all networks on the third complexity level: real piano recordings.
 							</p>
 
+							<p>
+							The songs were corrupted at a random place with a gap and then reconstructed with our method. The reconstructed song was cropped 2 to 4 seconds (randomly varying) before and after the gap.
+						  </p>
+
 							<ul style="list-style-type:none">
 								<li>
 									 <audio controls>
