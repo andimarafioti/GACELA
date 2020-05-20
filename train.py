@@ -5,12 +5,11 @@ def parse_args():
 
     parser.add_argument("--experiment_name", type=str, required=True)
     parser.add_argument("--data_folder", type=str, required=True)
-	
-	
-    parser.add_argument("--save_path", default='../saved_results/')
 
+
+    parser.add_argument("--save_path", default='saved_results/')
     parser.add_argument("--signal_split", type=list, default=[480, 64, 480], help='time bins before the gap, in the gap, and after the gap')
-    parser.add_argument("--md", type=int, default=32, 
+    parser.add_argument("--md", type=int, default=32,
 	help='general size of the network')
 
     args = parser.parse_args()
@@ -37,10 +36,10 @@ logging.getLogger().addHandler(console_handler)
 __author__ = 'Andres'
 
 def main():
-	args = parse_args()
-	signal_split = args.signal_split
+	user_args = parse_args()
+	signal_split = user_args.signal_split
 
-	md = 32
+	md = user_args.md
 
 	params_stft_discriminator = dict()
 	params_stft_discriminator['stride'] = [2, 2, 2, 2, 2]
@@ -138,8 +137,8 @@ def main():
 	args['spectrogram_shape'] = params['net']['shape']
 	args['gamma_gp'] = params['net']['gamma_gp']
 	args['tensorboard_interval'] = 500
-	args['save_path'] = args.save_path
-	args['experiment_name'] = 'fma'
+	args['save_path'] = user_args.save_path
+	args['experiment_name'] = user_args.experiment_name
 	args['save_interval'] = 10000
 
 	args['fft_length'] = 1024
@@ -151,7 +150,7 @@ def main():
 	examples_per_file = 32
 	audioLoader = AudioLoader(args['sampling_rate'], args['fft_length'], args['fft_hop_size'], 50)
 
-	dataFolder = args.data_folder
+	dataFolder = user_args.data_folder
 
 	trainDataset = TrainDataset(dataFolder, window_size=1024, audio_loader=audioLoader, examples_per_file=examples_per_file,
 								loaded_files_buffer=20, file_usages=30)
