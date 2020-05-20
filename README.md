@@ -6,7 +6,7 @@ We introduce GACELA, a generative adversarial network (GAN) designed to restore 
 
 # Installation
 
-Install the requirements with `pip install -r requirements.txt`. For windows users, the numpy version should be 1.14.0+mkl (find it [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/)).
+Install the requirements with `pip install -r requirements.txt`. Since ltfatpy is not available on windows, the code can only be used with Linux or Mac.
 
 The datasets used for the experiments are available:
 
@@ -18,6 +18,10 @@ The datasets used for the experiments are available:
 
 
 # Instructions
+
+On the folder 'train paper networks' you can find python the scripts we used to train the networks in the paper. To retrain those, just change the dataset folder to where your data is stored.
+
+To train new networks, just run `python train.py --experiment_name awesome_name --data_folder /path/to/your/mp3/or/wav/data/`
 
 
 ## Resources
