@@ -3,8 +3,8 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser()
 
-	parser.add_argument("--experiment_name", type=str, required=True)
-	parser.add_argument("--data_folder", type=str, required=True)
+    parser.add_argument("--experiment_name", type=str, required=True)
+    parser.add_argument("--data_folder", type=str, required=True)
 	
 	
     parser.add_argument("--save_path", default='../saved_results/')
