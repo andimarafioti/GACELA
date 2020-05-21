@@ -1,8 +1,8 @@
 tifresi==0.1.1
 numpy==1.14.5
 librosa==0.7.0
-torch==1.1.0
+pytorch==1.1.0
 torchvision==0.3.0
 argparse==1.4.0
 
-essentia==2.1b6.dev184
+essentia==2.1*
