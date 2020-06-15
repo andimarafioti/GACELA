@@ -53,37 +53,73 @@
 							<p>We expect the success of our method to be correlated to the complexity of the music it is trained on. We tested this hypothesis with listening tests. To do so, we trained the method on different datasets with increasing complexity.
 							</p>
 							<p>
-							The songs were corrupted at a random place with a gap and then reconstructed with our method. The reconstructed song was cropped 2 to 4 seconds (randomly varying) before and after the gap.
+							The songs were corrupted at a random place with a 750 ms gap and then reconstructed with our method. The reconstructed song was cropped 2 to 4 seconds (randomly varying) before and after the gap.
 							</p>
 
 							<h3>1) Simple midi </h3>
 
 							<p> The simplest case we handled was `hand-written' MIDI data. Here, the MIDI annotations have little variation since they are written down by humans on a quantized structure. For this case, we used the Lakh MIDI dataset, a collection of 176,581 unique MIDI files, 45,129 of which have been matched and aligned to entries in the Million Song Dataset. The Lakh MIDI dataset was generated with the goal of facilitating large-scale music information retrieval, both symbolic (using the MIDI files alone) and audio content-based (using information extracted from the MIDI files as annotations for the matched audio files).
 
+								<section class="tiles">
+									<article class="style1">
+
 								<ul style="list-style-type:none">
-		                <li><audio controls>
+										<li> Original examples to be inpainted.</li>
+
+										<li>a)<audio controls>
+												<source src="audio/complexity/1)/Lakh_gap_2.flac" type="audio/mpeg">
+												Your browser does not support the audio element.
+												</audio>
+										</li>
+
+										<li>b)<audio controls>
+												<source src="audio/complexity/1)/Lakh_gap_3.flac" type="audio/mpeg">
+												Your browser does not support the audio element.
+												</audio>
+										</li>
+										<li>c)<audio controls>
+												<source src="audio/complexity/1)/Lakh_gap_4.flac" type="audio/mpeg">
+												Your browser does not support the audio element.
+												</audio>
+										</li>
+										<li>d)<audio controls>
+												<source src="audio/complexity/1)/Lakh_gap_5.flac" type="audio/mpeg">
+												Your browser does not support the audio element.
+												</audio>
+										</li>
+
+		            </ul>
+							</article>
+
+						<article class="style2">
+								<ul style="list-style-type:none">
+									<li> Inpainted 750 ms with GACELA. </li>
+
+		                <li>a)<audio controls>
 		                    <source src="audio/complexity/1)/Lakh_GAN_2.flac" type="audio/mpeg">
 		                    Your browser does not support the audio element.
 		                    </audio>
 		                </li>
 
-		                <li><audio controls>
+		                <li>b)<audio controls>
 		                    <source src="audio/complexity/1)/Lakh_GAN_3.flac" type="audio/mpeg">
 		                    Your browser does not support the audio element.
 		                    </audio>
 		                </li>
-		                <li><audio controls>
+		                <li>c)<audio controls>
 		                    <source src="audio/complexity/1)/Lakh_GAN_4.flac" type="audio/mpeg">
 		                    Your browser does not support the audio element.
 		                    </audio>
 		                </li>
-		                <li><audio controls>
+		                <li>d)<audio controls>
 		                    <source src="audio/complexity/1)/Lakh_GAN_5.flac" type="audio/mpeg">
 		                    Your browser does not support the audio element.
 		                    </audio>
 		                </li>
 		            </ul>
+							</article>
 
+						</section>
 							<h3>2) Midi recorded from human performances</h3>
 							<p>
 								For the second complexity level, we used MIDI data that was extracted from performances on a piano. Here, the added complexity is the lack of a strict musical structure such as the precise tempo present from level 1). For this case, we used the Maestro dataset, a dataset containing over 200 hours of paired audio and MIDI recordings from ten years of International Piano-e-Competition. In this competitions, virtuoso pianist perform on Yamaha Disklaviers which, in addition to being concert-quality acoustic grand pianos, utilize an integrated high-precision MIDI capture and playback system. The MIDI data includes key strike velocities and sustain/sostenuto/una corda pedal positions.
