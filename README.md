@@ -33,6 +33,6 @@ To train new networks, just run `python train.py --experiment_name awesome_name 
 
 ### Acknowledgments
 
-This project accompanies the research work on audio inpainting of large gaps done at the Acoustics Research Institute in Vienna collaborating with the Swiss Data Science Center. The paper was submitted to an IEEE journal as is under review.
+This project accompanies the research work on audio inpainting of large gaps done at the Acoustics Research Institute in Vienna collaborating with the Swiss Data Science Center. The paper was submitted to an IEEE journal and is under review.
 
 We specially thank Michael Mihocic for running the experiments at the Acoustics Research Institute's laboratory during the coronavirus pandemic as well as the subjects for their participation.
