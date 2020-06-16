@@ -29,6 +29,7 @@ To train new networks, just run `python train.py --experiment_name awesome_name 
 - The pre-print can be read on [arxiv](https://arxiv.org/abs/2005.05032).
 - To hear examples please go to the [accompanying website](https://andimarafioti.github.io/GACELA/).
 
+- The checkpoints used for the evaluation of the [paper](https://arxiv.org/abs/2005.05032) can be downloaded [here](https://zenodo.org/record/3897144). Please extract the archives in the folder `saved_results`.
 
 ### Acknowledgments
 
