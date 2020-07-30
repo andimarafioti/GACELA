@@ -23,6 +23,7 @@ On the folder 'train paper networks' you can find the python scripts we used to 
 
 To train new networks, just run `python train.py --experiment_name awesome_name --data_folder /path/to/your/mp3/or/wav/data/`
 
+To test GACELA, either use the `Test GACELA` notebook in the main folder, or use one of the examples provided in the `notebooks` folder.
 
 ## Resources
 
