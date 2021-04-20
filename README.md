@@ -28,6 +28,7 @@ To test GACELA, either use the `Test GACELA` notebook in the main folder, or use
 ## Resources
 
 - The pre-print can be read on [arxiv](https://arxiv.org/abs/2005.05032).
+- The paper was published by [IEEE Journal of Selected Topics in Signal Processing](https://ieeexplore.ieee.org/document/9257074).
 - To hear examples please go to the [accompanying website](https://andimarafioti.github.io/GACELA/).
 
 - The checkpoints used for the evaluation of the [paper](https://arxiv.org/abs/2005.05032) can be downloaded [here](https://zenodo.org/record/3897144). Please extract the archives in the folder `saved_results`. Alternatively, you can simply run the script `download_checkpoints.py`:
@@ -37,6 +38,6 @@ python download_checkpoints.py
 
 ### Acknowledgments
 
-This project accompanies the research work on audio inpainting of large gaps done at the Acoustics Research Institute in Vienna collaborating with the Swiss Data Science Center. The paper was submitted to an IEEE journal and is under review.
+This project accompanies the research work on audio inpainting of large gaps done at the Acoustics Research Institute in Vienna collaborating with the Swiss Data Science Center. The paper was published by [IEEE Journal of Selected Topics in Signal Processing](https://ieeexplore.ieee.org/document/9257074).
 
 We specially thank Michael Mihocic for running the experiments at the Acoustics Research Institute's laboratory during the coronavirus pandemic as well as the subjects for their participation.
